@@ -1,0 +1,88 @@
+# HWP Parser Documentation Configuration
+# https://zensical.org/docs/
+
+[project]
+site_name = "HWP Parser"
+site_url = "https://devcomfort.github.io/hwp-parser/"
+site_description = "HWP 파일을 다양한 포맷으로 변환하는 Python 라이브러리"
+site_author = "devcomfort"
+copyright = "Copyright &copy; 2024-2026 devcomfort. Licensed under AGPL-3.0"
+
+repo_url = "https://github.com/devcomfort/hwp-parser"
+repo_name = "devcomfort/hwp-parser"
+
+docs_dir = "docs"
+site_dir = "site"
+
+nav = [
+    { "홈" = "index.md" },
+    { "시작하기" = [
+        { "개요" = "getting-started/overview.md" },
+        { "설치" = "getting-started/installation.md" },
+        { "빠른 시작" = "getting-started/quickstart.md" }
+    ]},
+    { "사용 가이드" = [
+        { "개요" = "guide/overview.md" },
+        { "Core 사용법" = "guide/core-usage.md" },
+        { "LlamaIndex 어댑터" = "guide/llama-index.md" },
+        { "REST API" = "guide/rest-api.md" }
+    ]},
+    { "문제 해결" = "troubleshooting.md" }
+]
+
+[project.theme]
+language = "ko"
+features = [
+    "navigation.instant",
+    "navigation.instant.prefetch",
+    "navigation.instant.progress",
+    "navigation.tracking",
+    "navigation.tabs",
+    "navigation.sections",
+    "navigation.expand",
+    "navigation.path",
+    "navigation.top",
+    "navigation.footer",
+    "toc.follow",
+    "content.code.copy",
+    "content.code.annotate",
+    "content.tooltips",
+    "search.suggest",
+    "search.highlight"
+]
+palette = [
+    { scheme = "default", primary = "indigo", accent = "indigo", toggle = { icon = "material/brightness-7", name = "다크 모드로 전환" } },
+    { scheme = "slate", primary = "indigo", accent = "indigo", toggle = { icon = "material/brightness-4", name = "라이트 모드로 전환" } }
+]
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/devcomfort/hwp-parser"
+name = "GitHub"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/hwp-parser/"
+name = "PyPI"
+
+[project.extra]
+generator = true
+
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.tables]
