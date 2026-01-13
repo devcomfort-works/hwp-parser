@@ -1,0 +1,113 @@
+[project]
+name = "hwp-parser"
+version = "0.1.0"
+description = "HWP file parser using pyhwp CLI tools with optional LlamaIndex adapter"
+authors = [
+    { name = "devcomfort" }
+]
+readme = "README.md"
+requires-python = ">= 3.11"
+license = { text = "AGPL-3.0" }
+keywords = ["hwp", "parser", "document", "korean", "pyhwp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Markup",
+]
+
+dependencies = [
+    "pyhwp>=0.1b15",
+    "html2text>=2024.2.26",
+    "html-to-markdown>=1.0.0",
+    "llama-index-core>=0.14.12",
+    "bentoml>=1.4.33",
+    "pydantic>=2.12.5",
+]
+
+[project.optional-dependencies]
+llama-index = [
+    "llama-index-core>=0.10.0",
+]
+bentoml = [
+    "bentoml>=1.2.0",
+    "pydantic>=2.0.0",
+]
+all = [
+    "hwp-parser[llama-index]",
+    "hwp-parser[bentoml]",
+]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+hwp-serve = "hwp_parser.adapters.api:serve"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "ruff>=0.1.0",
+    "coverage>=7.13.1",
+    "pytest-benchmark>=5.2.3",
+    "pytest-cov>=7.0.0",
+    "pytest-xdist>=3.8.0",
+    "zensical>=0.0.15",
+]
+
+[tool.rye.scripts]
+serve = "bentoml serve hwp_parser.adapters.api:HWPService"
+test = "pytest tests/ -v --ignore=tests/test_benchmark.py"
+test-cov = "pytest tests/ -v --cov=hwp_parser --cov-report=term-missing --ignore=tests/test_benchmark.py"
+test-cov-html = "pytest tests/ -v --cov=hwp_parser --cov-report=term-missing --cov-report=html --ignore=tests/test_benchmark.py"
+test-fast = "pytest tests/ -v -x --ignore=tests/test_benchmark.py"
+test-all = "pytest tests/ -v"
+benchmark = "pytest tests/test_benchmark.py -v --benchmark-verbose"
+docs = "zensical serve"
+docs-build = "zensical build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-ra -q"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "benchmark: marks tests as benchmark tests",
+]
+
+[tool.coverage.run]
+source = ["src/hwp_parser"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hwp_parser"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
