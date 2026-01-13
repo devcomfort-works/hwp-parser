@@ -9,8 +9,17 @@ HWP 파일을 텍스트, HTML, Markdown, ODT로 변환하는 Python 라이브러
 ## 빠른 시작
 
 ```bash
-pip install hwp-parser
+# pip
+pip install git+https://github.com/devcomfort-works/hwp-parser.git
+
+# uv
+uv add git+https://github.com/devcomfort-works/hwp-parser.git
+
+# rye
+rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 ```
+
+> 📦 **PyPI 배포 예정**: 추후 PyPI에 `hwp-parser`라는 이름으로 배포될 예정입니다.
 
 ```python
 from hwp_parser.core import HWPConverter
@@ -21,19 +30,26 @@ print(result.content)
 
 ## 주요 기능
 
-| 기능 | 설명 |
-|------|------|
-| 🔄 **다중 포맷 변환** | HWP → Text, HTML, Markdown, ODT |
+| 기능                   | 설명                             |
+| ---------------------- | -------------------------------- |
+| 🔄 **다중 포맷 변환**  | HWP → Text, HTML, Markdown, ODT  |
 | 🦙 **LlamaIndex 통합** | RAG 파이프라인에서 HWP 문서 활용 |
-| 🌐 **REST API** | BentoML 기반 HTTP API 서버 |
+| 🌐 **REST API**        | BentoML 기반 HTTP API 서버       |
 
 ## 설치 옵션
 
 ```bash
-pip install hwp-parser                 # 기본
-pip install hwp-parser[llama-index]    # LlamaIndex 어댑터
-pip install hwp-parser[bentoml]        # REST API 서버
-pip install hwp-parser[all]            # 전체 기능
+# 기본 설치
+pip install git+https://github.com/devcomfort-works/hwp-parser.git
+
+# LlamaIndex 어댑터 포함
+pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"
+
+# REST API 서버 포함
+pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
+
+# 전체 기능 포함
+pip install "hwp-parser[all] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 ```
 
 ## 사용 예시

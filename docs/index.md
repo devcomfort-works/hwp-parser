@@ -58,8 +58,17 @@ print(result.content)
 ### 설치
 
 ```bash
-pip install hwp-parser
+# pip
+pip install git+https://github.com/devcomfort-works/hwp-parser.git
+
+# uv
+uv add git+https://github.com/devcomfort-works/hwp-parser.git
+
+# rye
+rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 ```
+
+> 📦 **PyPI 배포 예정**: 추후 PyPI에 `hwp-parser`라는 이름으로 배포될 예정입니다.
 
 ### 기본 사용
 
@@ -73,11 +82,11 @@ print(result.content)
 
 ### 선택적 기능
 
-| 명령어                                | 용도                |
-| ------------------------------------- | ------------------- |
-| `pip install hwp-parser[llama-index]` | LlamaIndex RAG 통합 |
-| `pip install hwp-parser[bentoml]`     | REST API 서버       |
-| `pip install hwp-parser[all]`         | 전체 기능           |
+| 명령어                                            | 용도                |
+| ------------------------------------------------- | ------------------- |
+| `pip install "hwp-parser[llama-index] @ git+..."` | LlamaIndex RAG 통합 |
+| `pip install "hwp-parser[bentoml] @ git+..."`     | REST API 서버       |
+| `pip install "hwp-parser[all] @ git+..."`         | 전체 기능           |
 
 [→ 상세 설치 가이드](getting-started/installation.md)
 

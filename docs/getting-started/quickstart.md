@@ -19,7 +19,7 @@ Python 코드에서 직접 HWP 파일을 변환합니다.
 ### 설치
 
 ```bash
-pip install hwp-parser
+pip install git+https://github.com/devcomfort-works/hwp-parser.git
 ```
 
 ### 기본 변환
@@ -75,7 +75,7 @@ REST API 서버를 실행하여 HTTP로 HWP 파일을 변환합니다.
 ### 설치
 
 ```bash
-pip install hwp-parser[bentoml]
+pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 ```
 
 ### 서버 실행
@@ -132,7 +132,7 @@ LlamaIndex를 사용하여 HWP 문서를 RAG 파이프라인에 통합합니다.
 ### 설치
 
 ```bash
-pip install hwp-parser[llama-index]
+pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 ```
 
 ### HWP 문서 로드
