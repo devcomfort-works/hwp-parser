@@ -123,6 +123,8 @@ llama-index-instrumentation==0.4.2
     # via llama-index-workflows
 llama-index-workflows==2.11.7
     # via llama-index-core
+loguru==0.7.3
+    # via hwp-parser
 lxml==6.0.2
     # via pyhwp
 markdown-it-py==4.0.0

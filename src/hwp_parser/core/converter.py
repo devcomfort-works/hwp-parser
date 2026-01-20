@@ -9,11 +9,15 @@ from __future__ import annotations
 import html
 import shutil
 import subprocess
+import sys
 import tempfile
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Literal, cast
+
+from loguru import logger
 
 OutputFormat = Literal["txt", "html", "markdown", "odt"]
 
@@ -79,10 +83,64 @@ class HWPConverter:
     """
 
     SUPPORTED_FORMATS: tuple[OutputFormat, ...] = ("txt", "html", "markdown", "odt")
+    _logger_configured: bool = False
 
-    def __init__(self) -> None:
+    def __init__(self, verbose: bool = False) -> None:
         """HWPConverter 초기화"""
-        pass
+        self.verbose = verbose
+        if self.verbose:
+            self._configure_logger()
+
+    @classmethod
+    def _configure_logger(cls) -> None:
+        if cls._logger_configured:
+            return
+        logger.remove()
+        logger.add(
+            sys.stderr,
+            level="INFO",
+            colorize=True,
+            format=(
+                "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+                "<level>{level: <8}</level> | {message}"
+            ),
+        )
+        cls._logger_configured = True
+
+    def _log_start(self, file_path: Path, output_format: OutputFormat) -> None:
+        if not self.verbose:
+            return
+        input_size = file_path.stat().st_size if file_path.exists() else 0
+        logger.info(
+            "HWP 변환 시작 | {name} | 입력 {size} bytes | 포맷 {fmt}",
+            name=file_path.name,
+            size=input_size,
+            fmt=output_format,
+        )
+
+    def _log_finish(
+        self,
+        file_path: Path,
+        output_format: OutputFormat,
+        pipeline: str,
+        content: str | bytes,
+        started_at: float,
+    ) -> None:
+        if not self.verbose:
+            return
+        input_size = file_path.stat().st_size if file_path.exists() else 0
+        output_size = len(content)
+        elapsed = time.perf_counter() - started_at
+        logger.info(
+            "HWP 변환 완료 | {name} | 입력 {in_size} bytes | 출력 {out_size} bytes | "
+            "포맷 {fmt} | 파이프라인 {pipeline} | 소요 {elapsed:.3f}s",
+            name=file_path.name,
+            in_size=input_size,
+            out_size=output_size,
+            fmt=output_format,
+            pipeline=pipeline,
+            elapsed=elapsed,
+        )
 
     def _validate_file(self, file_path: Path) -> Path:
         """
@@ -130,6 +188,8 @@ class HWPConverter:
             RuntimeError: 변환 실패
         """
         file_path = self._validate_file(file_path)
+        self._log_start(file_path, "html")
+        started_at = time.perf_counter()
 
         temp_dir = Path(tempfile.mkdtemp())
         output_dir = temp_dir / file_path.stem
@@ -155,12 +215,22 @@ class HWPConverter:
 
             content = xhtml_file.read_text(encoding="utf-8")
 
-            return ConversionResult(
+            result = ConversionResult(
                 content=content,
                 source_path=file_path,
                 output_format="html",
                 pipeline="hwp→xhtml",
             )
+
+            self._log_finish(
+                file_path,
+                "html",
+                result.pipeline,
+                result.content,
+                started_at,
+            )
+
+            return result
 
         finally:
             if temp_dir.exists():
@@ -186,6 +256,8 @@ class HWPConverter:
         import html2text
 
         file_path = self._validate_file(file_path)
+        self._log_start(file_path, "txt")
+        started_at = time.perf_counter()
 
         # 1단계: HTML 변환
         html_result = self.to_html(file_path)
@@ -211,12 +283,22 @@ class HWPConverter:
         for escape in markdown_escapes:
             text_content = text_content.replace(escape, escape[1:])
 
-        return ConversionResult(
+        result = ConversionResult(
             content=text_content,
             source_path=file_path,
             output_format="txt",
             pipeline="hwp→xhtml→txt",
         )
+
+        self._log_finish(
+            file_path,
+            "txt",
+            result.pipeline,
+            result.content,
+            started_at,
+        )
+
+        return result
 
     def to_markdown(self, file_path: Path) -> ConversionResult:
         """
@@ -244,6 +326,8 @@ class HWPConverter:
             )
 
         file_path = self._validate_file(file_path)
+        self._log_start(file_path, "markdown")
+        started_at = time.perf_counter()
 
         # 1단계: HTML 변환
         html_result = self.to_html(file_path)
@@ -254,12 +338,22 @@ class HWPConverter:
         )
         markdown_content = html.unescape(markdown_content)
 
-        return ConversionResult(
+        result = ConversionResult(
             content=markdown_content,
             source_path=file_path,
             output_format="markdown",
             pipeline="hwp→xhtml→markdown",
         )
+
+        self._log_finish(
+            file_path,
+            "markdown",
+            result.pipeline,
+            result.content,
+            started_at,
+        )
+
+        return result
 
     def to_odt(self, file_path: Path) -> ConversionResult:
         """
@@ -281,6 +375,8 @@ class HWPConverter:
             RuntimeError: 변환 실패
         """
         file_path = self._validate_file(file_path)
+        self._log_start(file_path, "odt")
+        started_at = time.perf_counter()
 
         temp_dir = Path(tempfile.mkdtemp())
         output_file = temp_dir / f"{file_path.stem}.odt"
@@ -312,12 +408,22 @@ class HWPConverter:
 
             content = output_file.read_bytes()
 
-            return ConversionResult(
+            result = ConversionResult(
                 content=content,
                 source_path=file_path,
                 output_format="odt",
                 pipeline="hwp→odt",
             )
+
+            self._log_finish(
+                file_path,
+                "odt",
+                result.pipeline,
+                result.content,
+                started_at,
+            )
+
+            return result
 
         finally:
             if temp_dir.exists():

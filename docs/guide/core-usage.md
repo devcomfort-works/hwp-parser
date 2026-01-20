@@ -12,6 +12,17 @@ from hwp_parser.core import HWPConverter
 converter = HWPConverter()
 ```
 
+성능을 확인하고 싶다면 `verbose=True`로 로깅을 활성화할 수 있습니다.
+
+```python
+from hwp_parser.core import HWPConverter
+
+converter = HWPConverter(verbose=True)
+result = converter.to_markdown("document.hwp")
+```
+
+> 로깅은 `loguru` 기반으로 동작하며, 기본 포맷에는 시간/레벨/컬러가 포함됩니다.
+
 ## 변환 메서드
 
 ### to_text()
