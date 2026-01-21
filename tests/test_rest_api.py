@@ -23,7 +23,24 @@ if TYPE_CHECKING:
 
 
 class TestHWPService:
-    """HWPService 테스트."""
+    """HWPService 초기화 및 기본 엔드포인트 테스트 스위트.
+
+    테스트 대상:
+        - HWPService 인스턴스 생성 및 converter 주입
+        - health(), formats() 엔드포인트
+
+    검증 범위:
+        1. 서비스 생성 시 HWPConverter 인스턴스 자동 주입
+        2. health 엔드포인트 응답 형식
+        3. formats 엔드포인트 응답 형식
+
+    비즈니스 컨텍스트:
+        HWPService는 BentoML @bentoml.service 데코레이터로 정의된 REST API 서비스다.
+        health는 로드밸런서/쿠버네티스 헬스체크에 사용된다.
+
+    관련 테스트:
+        - TestServiceConversion: 실제 변환 엔드포인트 테스트
+    """
 
     @pytest.fixture
     def service(self) -> ServiceInstance:
@@ -31,32 +48,45 @@ class TestHWPService:
         return HWPService()
 
     def test_service_init(self, service: ServiceInstance) -> None:
-        """서비스 초기화 → converter 주입.
+        """서비스 초기화 시 HWPConverter가 자동 주입되는지 검증.
 
-        Given: 없음
-        When: HWPService() 생성
-        Then: converter 속성에 HWPConverter 인스턴스 존재
+        시나리오:
+            HWPService는 생성 시 내부적으로 HWPConverter 인스턴스를
+            생성하여 converter 속성에 저장한다.
+
+        의존성:
+            - pytest fixture: service (HWPService 인스턴스)
+            - 모듈: hwp_parser.core.HWPConverter
         """
         assert service.converter is not None
         assert isinstance(service.converter, HWPConverter)
 
     def test_health_endpoint(self, service: ServiceInstance) -> None:
-        """헬스 체크 엔드포인트.
+        """헬스 체크 엔드포인트 응답 형식 검증.
 
-        Given: HWPService 인스턴스
-        When: health() 호출
-        Then: {"status": "healthy", "service": "hwp-parser"}
+        시나리오:
+            GET /health 엔드포인트는 서비스 상태를 반환한다.
+            쿠버네티스 liveness/readiness probe에 사용된다.
+
+        의존성:
+            - pytest fixture: service
         """
         result = service.health()
         assert result["status"] == "healthy"
         assert result["service"] == "hwp-parser"
 
     def test_formats_endpoint(self, service: ServiceInstance) -> None:
-        """지원 포맷 엔드포인트.
+        """지원 포맷 엔드포인트 응답 형식 검증.
 
-        Given: HWPService 인스턴스
-        When: formats() 호출
-        Then: supported_formats에 txt/html/markdown/odt 포함
+        시나리오:
+            GET /formats 엔드포인트는 지원하는 변환 포맷 목록을 반환한다.
+            클라이언트가 사용 가능한 포맷을 조회할 수 있다.
+
+        의존성:
+            - pytest fixture: service
+
+        관련 테스트:
+            - test_python_api.TestHWPConverterInit.test_supported_formats: 동일한 포맷 목록
         """
         result = service.formats()
         assert "supported_formats" in result
@@ -67,7 +97,21 @@ class TestHWPService:
 
 
 class TestApiServe:
-    """API 실행 래퍼 테스트."""
+    """serve() 함수 테스트 스위트.
+
+    테스트 대상:
+        - hwp_parser.adapters.api.serve() 함수
+
+    검증 범위:
+        1. bentoml serve 명령어 정확히 실행
+
+    비즈니스 컨텍스트:
+        serve()는 CLI 진입점으로, pyproject.toml의 hwp-serve 스크립트에서 호출된다.
+        내부적으로 subprocess.run으로 bentoml serve를 실행한다.
+
+    테스트 전략:
+        subprocess.run을 mocking하여 실제 서버 실행 없이 검증한다.
+    """
 
     def test_serve_invokes_bentoml(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """serve() → bentoml serve 호출.
@@ -99,7 +143,18 @@ class TestApiServe:
 
 
 class TestConversionResponse:
-    """ConversionResponse 테스트."""
+    """ConversionResponse Pydantic 모델 테스트 스위트.
+
+    테스트 대상:
+        - ConversionResponse 데이터 모델
+
+    검증 범위:
+        1. 모델 생성 시 필드 정상 설정
+
+    비즈니스 컨텍스트:
+        ConversionResponse는 REST API 응답의 JSON 스키마를 정의한다.
+        Pydantic 모델로 정의되어 자동 검증 및 직렬화를 제공한다.
+    """
 
     def test_response_model(self) -> None:
         """응답 모델 생성.
@@ -122,7 +177,22 @@ class TestConversionResponse:
 
 
 class TestResultToResponse:
-    """_result_to_response 함수 테스트."""
+    """_result_to_response() 변환 함수 테스트 스위트.
+
+    테스트 대상:
+        - _result_to_response(ConversionResult) → ConversionResponse 변환
+
+    검증 범위:
+        1. 텍스트 결과 → 문자열 응답 (is_binary=False)
+        2. 바이너리 결과 → base64 인코딩 응답 (is_binary=True)
+
+    비즈니스 컨텍스트:
+        HWPConverter의 ConversionResult를 REST API 응답으로 변환한다.
+        ODT 같은 바이너리 데이터는 JSON 직렬화를 위해 base64로 인코딩된다.
+
+    관련 테스트:
+        - test_python_api.TestConversionResult: ConversionResult 속성
+    """
 
     def test_text_result_to_response(
         self, converter: HWPConverter, sample_hwp_file: Path
@@ -163,7 +233,28 @@ class TestResultToResponse:
 
 
 class TestServiceConversion:
-    """서비스 변환 테스트."""
+    """서비스 변환 엔드포인트 테스트 스위트.
+
+    테스트 대상:
+        - convert_to_text(), convert_to_html(), convert_to_markdown(), convert_to_odt()
+        - convert(file, output_format) 범용 메서드
+
+    검증 범위:
+        1. 각 포맷별 변환 엔드포인트 정상 동작
+        2. 큰 파일 변환
+        3. 베크 파일 변환
+
+    비즈니스 컨텍스트:
+        각 엔드포인트는 POST /convert/{format} HTTP 요청을 처리한다.
+        내부적으로 HWPConverter의 해당 메서드를 호출한다.
+
+    의존성:
+        - pytest fixture: sample_hwp_file, all_hwp_files, small_hwp_files (conftest.py)
+        - 테스트 데이터: tests/fixtures/*.hwp
+
+    관련 테스트:
+        - test_python_api.TestConvert: HWPConverter.convert() 테스트
+    """
 
     @pytest.fixture
     def service(self) -> ServiceInstance:
@@ -266,7 +357,25 @@ class TestServiceConversion:
 
 
 class TestServiceHttpConfig:
-    """HTTP 설정 에지 케이스 테스트."""
+    """HTTP 설정 에지 케이스 테스트 스위트.
+
+    테스트 대상:
+        - _http_config 모듈 변수 (CORS 설정)
+
+    검증 범위:
+        1. HWP_SERVICE_CORS_ENABLED=true 시 CORS 설정 포함
+        2. HWP_SERVICE_CORS_ORIGINS 환경변수 반영
+
+    비즈니스 컨텍스트:
+        BentoML 서비스는 _http_config를 통해 CORS 정책을 설정한다.
+        환경변수로 CORS를 활성화/비활성화하고 허용 도메인을 지정할 수 있다.
+
+    테스트 전략:
+        환경변수 설정 후 모듈을 reload하여 설정 변경을 반영한다.
+
+    관련 테스트:
+        - test_config.TestConfigHelpers: _get_bool, _get_list 헬퍼
+    """
 
     def test_http_config_includes_cors(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """CORS 설정 → HTTP config 반영.

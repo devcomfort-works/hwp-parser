@@ -5,36 +5,27 @@
 ### Rye는 pip이 아니다
 
 ```bash
-# ❌ 절대 하지 마라
+# ❌ 절대 금지
 pip install ...
-python -m pip install ...
 pipx install rye
 
-# ✅ 반드시 이렇게 해라
+# ✅ 올바른 방법
 rye sync                      # 프로젝트 의존성 설치
 rye add <package>             # 프로젝트에 패키지 추가
 rye tools install <package>   # 글로벌 도구 설치 (coverage-badge 등)
 ```
 
-- **Rye는 내부적으로 uv를 사용한다. pip 명령어는 존재하지 않는다.**
-- GitHub Actions에서 Rye 설치: `curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash`
+- Rye는 uv 기반이다. pip 명령어가 아예 없다.
+- CI에서 Rye 설치: `curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash`
 
 ### 커밋 컨벤션
 
-- **한국어로 작성해라.** 영어 커밋 메시지 금지.
-- **Conventional Commits 형식 준수**: `<type>(<scope>): <설명>`
+**한국어로 작성. 영어 커밋 금지.**
 
 ```bash
-# ❌ 영어 커밋 금지
-git commit -m "feat(converter): add PDF export support"
-
-# ✅ 한국어로 작성
 git commit -m "feat(converter): PDF 내보내기 기능 추가"
 git commit -m "fix(api): 타임아웃 설정이 적용되지 않는 버그 수정"
-git commit -m "refactor(config): 데드 코드 제거"
 git commit -m "test(config): _load_dotenv 테스트를 임시 파일 기반으로 리팩터링"
-git commit -m "docs: copilot-instructions 업데이트"
-git commit -m "chore(ci): 커버리지 배지 자동 업데이트 설정"
 ```
 
 ### 행동 원칙
@@ -89,44 +80,69 @@ rye run docs          # 문서 로컬 서버 (zensical)
 
 ## 테스트 가이드
 
-### 테스트 파일별 목적
-
-| 파일 | 목적 | 언제 수정/추가? |
-|------|------|----------------|
-| `test_converter.py` | `HWPConverter` 단위 테스트 | 변환 로직, 포맷 지원, 에러 처리 변경 시 |
-| `test_config.py` | 설정 헬퍼 함수 테스트 | `_get_*` 함수, `.env` 로딩 로직 변경 시 |
-| `test_python_api.py` | Python API 통합 테스트 | 공개 API 인터페이스 변경 시 |
-| `test_rest_api.py` | BentoML REST API 테스트 | 엔드포인트, 요청/응답 스키마 변경 시 |
-| `test_llama_index_api.py` | `HWPReader` 테스트 | LlamaIndex 통합 로직 변경 시 |
-| `benchmarks.py` | 성능 벤치마크 | 성능 최적화 작업 시 (CI에서 실행 안 함) |
-
-### 테스트 작성 원칙
+### 핵심 원칙
 
 1. **실제 파일 사용**: `tests/fixtures/*.hwp` 파일로 테스트 (mocking 지양)
 2. **tmp_path 활용**: 파일 I/O 테스트는 pytest의 `tmp_path` fixture 사용
 3. **커버리지 100% 유지**: 새 코드 추가 시 반드시 테스트 작성
 
-### 실제 파일 기반 테스트 (mocking 지양)
+### 테스트 파일별 목적
+
+| 파일                      | 목적                       | 언제 수정?                              |
+| ------------------------- | -------------------------- | --------------------------------------- |
+| `test_converter.py`       | `HWPConverter` 단위 테스트 | 변환 로직, 포맷 지원, 에러 처리 변경 시 |
+| `test_config.py`          | 설정 헬퍼 함수 테스트      | `_get_*` 함수, `.env` 로딩 로직 변경 시 |
+| `test_python_api.py`      | Python API 통합 테스트     | 공개 API 인터페이스 변경 시             |
+| `test_rest_api.py`        | BentoML REST API 테스트    | 엔드포인트, 요청/응답 스키마 변경 시    |
+| `test_llama_index_api.py` | `HWPReader` 테스트         | LlamaIndex 통합 로직 변경 시            |
+
+### 테스트 docstring 구조
+
+계층적 docstring 구조를 따른다:
+
+**클래스 레벨** (테스트 스위트):
 
 ```python
-# ✅ tmp_path fixture로 실제 파일 I/O 테스트
-def test_load_dotenv_finds_env_file(tmp_path: Path, monkeypatch) -> None:
-    # 임시 디렉터리 구조 생성
-    project_root = tmp_path / "project"
-    project_root.mkdir()
-    (project_root / "pyproject.toml").touch()
-    (project_root / ".env").write_text("MY_VAR=hello")
-    
-    # __file__ 위치 조작으로 테스트
-    fake_module = project_root / "src" / "module.py"
-    fake_module.parent.mkdir(parents=True)
-    fake_module.touch()
-    monkeypatch.setattr("hwp_parser.adapters.api.config.__file__", str(fake_module))
+class TestConfigLoading:
+    """설정 로드 핵심 동작 테스트 스위트.
+
+    테스트 대상:
+        - config 모듈의 _get_* 헬퍼 함수들
+        - ServiceConfig 인스턴스
+
+    검증 범위:
+        1. 환경변수 미설정 시 기본값 반환
+        2. 환경변수 설정 시 해당 값 정확히 반환
+
+    관련 테스트:
+        - TestConfigHelpers: 에지 케이스 처리
+    """
 ```
 
-### pytest 경고 처리
+**함수 레벨** (테스트 시나리오):
+
+```python
+def test_get_int_with_invalid_value(self) -> None:
+    """정수로 파싱 불가능한 환경변수 값에 대해 기본값을 반환하는지 검증.
+
+    시나리오:
+        환경변수 값이 "not_a_number"처럼 정수로 변환할 수 없는 경우,
+        기본값을 반환하여 서비스 안정성을 보장한다.
+
+    의존성:
+        - 테스트 데이터: TEST_INT="not_a_number"
+        - 모듈: hwp_parser.adapters.api.config (_get_int)
+        - mock: os.environ 패치
+
+    관련 테스트:
+        - test_get_float_with_invalid_value: float 버전의 동일한 테스트
+    """
+```
+
+### pytest 설정
 
 `pyproject.toml`의 `filterwarnings`에서 외부 라이브러리 경고 억제:
+
 ```toml
 filterwarnings = [
     "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",  # xdist 충돌
@@ -134,63 +150,40 @@ filterwarnings = [
 ]
 ```
 
-### 벤치마크 fixture 주의
-
-```python
-# ❌ ScopeMismatch: session fixture를 function scope에서 사용
-@pytest.fixture(scope="session")
-def my_fixture(): ...
-
-# ✅ 벤치마크에서는 일반 함수로 직접 호출
-def get_sample_files():
-    return list(Path("tests/fixtures").glob("*.hwp"))
-```
-
 ## 설정 (config.py)
 
 ### 환경변수
 
-| 변수 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `HWP_SERVICE_NAME` | str | "hwp-service" | 서비스 이름 |
-| `HWP_SERVICE_PORT` | int | 3000 | HTTP 포트 |
-| `HWP_SERVICE_TIMEOUT` | float | 300.0 | 요청 타임아웃(초) |
-| `HWP_SERVICE_WORKERS` | int | 1 | 워커 수 |
-| `HWP_SERVICE_CORS_ENABLED` | bool | false | CORS 활성화 |
+| 변수                       | 타입  | 기본값        | 설명              |
+| -------------------------- | ----- | ------------- | ----------------- |
+| `HWP_SERVICE_NAME`         | str   | "hwp-service" | 서비스 이름       |
+| `HWP_SERVICE_PORT`         | int   | 3000          | HTTP 포트         |
+| `HWP_SERVICE_TIMEOUT`      | float | 300.0         | 요청 타임아웃(초) |
+| `HWP_SERVICE_WORKERS`      | int   | 1             | 워커 수           |
+| `HWP_SERVICE_CORS_ENABLED` | bool  | false         | CORS 활성화       |
 
-### 타입 검증 헬퍼
+### _get_\* 헬퍼 패턴
 
-`_get_int`, `_get_float`, `_get_bool`, `_get_str` 함수는 **런타임 타입 검증** 포함:
-```python
-# default 타입이 맞지 않으면 즉시 TypeError 발생 (fail-fast)
-_get_int("KEY", "wrong")  # TypeError: default must be int, got str
-```
+- **런타임 타입 검증**: default 파라미터 타입이 맞지 않으면 즉시 TypeError (fail-fast)
+- **파싱 실패 시 fallback**: 환경변수 값이 파싱 불가능하면 기본값 반환 (서비스 안정성)
+- **빈 문자열 vs 미설정 구분**: `""` → 명시적 비움, 미설정 → 기본값 사용
 
 ## CI/CD
 
-### 워크플로우
-
-| 워크플로우 | 트리거 | 목적 |
-|-----------|--------|------|
-| `coverage.yml` | `src/`, `tests/`, `pyproject.toml` 변경 시 | 테스트 실행 + 커버리지 배지 업데이트 |
-| `cloudflare-pages.yml` | `docs/`, `zensical.toml` 변경 시 | 문서 사이트 배포 (Cloudflare Pages) |
-
-### CI 주의사항
-
-- **Rye 설치**: 반드시 curl 사용 (`pipx install rye` ❌)
-- **커버리지 배지**: `.github/badges/coverage.svg` (main push 시 자동 업데이트)
-- **문서 빌드**: Zensical 사용 (`pip install zensical` → `zensical build`)
+| 워크플로우             | 트리거                                     | 목적                                 |
+| ---------------------- | ------------------------------------------ | ------------------------------------ |
+| `coverage.yml`         | `src/`, `tests/`, `pyproject.toml` 변경 시 | 테스트 실행 + 커버리지 배지 업데이트 |
+| `cloudflare-pages.yml` | `docs/`, `zensical.toml` 변경 시           | 문서 사이트 배포 (Cloudflare Pages)  |
 
 ---
 
 ## Quick Reference
 
-| 항목 | 내용 |
-|------|------|
-| 패키지 관리 | `rye` (pip 아님, uv 기반) |
-| 테스트 실행 | `rye run test` (pytest -n auto) |
-| 커버리지 목표 | **100%** (필수) |
-| 변환 진입점 | `HWPConverter` |
-| API 진입점 | `HWPService` |
-| LlamaIndex 진입점 | `HWPReader` |
-| fixture 위치 | `tests/fixtures/*.hwp` |
+| 항목          | 내용                            |
+| ------------- | ------------------------------- |
+| 패키지 관리   | `rye` (pip 아님, uv 기반)       |
+| 테스트 실행   | `rye run test` (pytest -n auto) |
+| 커버리지 목표 | **100%** (필수)                 |
+| 변환 진입점   | `HWPConverter`                  |
+| API 진입점    | `HWPService`                    |
+| fixture 위치  | `tests/fixtures/*.hwp`          |
