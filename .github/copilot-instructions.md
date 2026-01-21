@@ -1,48 +1,123 @@
 # Copilot Instructions (hwp-parser)
 
-## 프로젝트 큰 그림
+## ⚠️ 절대 규칙 (CRITICAL)
 
-- Core 변환 로직은 [src/hwp_parser/core/converter.py](src/hwp_parser/core/converter.py)의 `HWPConverter`가 담당하며, pyhwp CLI(`hwp5html`, `hwp5odt`)를 호출해 HWP → HTML/텍스트/Markdown/ODT로 변환합니다.
-- REST API는 BentoML 서비스 [src/hwp_parser/adapters/api/service.py](src/hwp_parser/adapters/api/service.py)로 노출되며 `HWPConverter`를 사용해 `/convert/*` 엔드포인트를 제공합니다.
-- LlamaIndex 통합은 [src/hwp_parser/adapters/llama_index/reader.py](src/hwp_parser/adapters/llama_index/reader.py)의 `HWPReader`가 `HWPConverter` 결과를 Document로 래핑합니다.
+### Rye는 pip이 아니다
+```bash
+# ❌ 절대 하지 마라
+pip install ...
+python -m pip install ...
+rye run python -m pip install ...
+pipx install rye
 
-## 핵심 워크플로우
+# ✅ 반드시 이렇게 해라
+rye sync                      # 프로젝트 의존성 설치
+rye add <package>             # 프로젝트에 패키지 추가
+rye tools install <package>   # 글로벌 도구 설치 (coverage-badge 등)
+```
 
-- 의존성 설치: `rye sync`
-- 테스트(병렬): `rye run test`
-- 커버리지: `rye run test-cov` 또는 `rye run test-cov-html` (HTML 생성)
-- API 서버: `rye run serve` 또는 `bentoml serve hwp_parser.adapters.api:HWPService`
-- 벤치마크: `rye run benchmark` (파일: [tests/benchmarks.py](tests/benchmarks.py))
+- **Rye는 내부적으로 uv를 사용한다. pip 명령어는 존재하지 않는다.**
+- GitHub Actions에서 Rye 설치: `curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash`
 
-## 프로젝트 고유 패턴/규칙
+### 행동 원칙
+- **확인만 하지 말고 바로 실행해라.** 문서 확인 후 "맞네요"로 끝내지 마라.
+- **물어보지 말고 해라.** 명확한 작업이면 허락 구하지 마라.
+- **커밋은 논리적으로 분리해라.** 파일별이 아닌 변경 의도별로.
 
-- 변환 결과는 `ConversionResult` 데이터 클래스(`content`, `pipeline`, `converted_at` 등)로 반환하며 `to_dict()`를 통해 응답/출력에 사용됩니다.
-- `HWPConverter(verbose=True)`일 때 loguru 로거를 내부에서 설정하고 변환 시작/완료 로그에 입력/출력 용량 및 소요 시간을 기록합니다.
-- 변환은 임시 디렉터리(`tempfile.mkdtemp`)를 사용하고 `finally`에서 항상 정리합니다.
-- `to_markdown`은 `html-to-markdown`의 `ConversionOptions` + `convert` API를 사용합니다. `to_text`는 `html2text`로 HTML → 텍스트 변환 후 이스케이프 제거를 수행합니다.
+---
 
-## 설정/환경
+## 프로젝트 구조
 
-- REST API 설정은 [src/hwp_parser/adapters/api/config.py](src/hwp_parser/adapters/api/config.py)에서 `.env` 또는 환경변수로 읽습니다.
-  - 예: `HWP_SERVICE_PORT`, `HWP_SERVICE_TIMEOUT`, `HWP_SERVICE_CORS_ENABLED`
+```
+src/hwp_parser/
+├── core/converter.py      # HWPConverter - 모든 변환의 진입점
+├── adapters/
+│   ├── api/service.py     # HWPService (BentoML REST API)
+│   └── llama_index/reader.py  # HWPReader (LlamaIndex 통합)
+tests/
+├── test_python_api.py     # Python API 테스트
+├── test_rest_api.py       # REST API 테스트  
+├── test_llama_index_api.py # LlamaIndex 테스트
+├── benchmarks.py          # 성능 벤치마크
+└── fixtures/              # 테스트용 HWP 파일들
+```
 
-## 테스트 구성
+## 핵심 명령어
 
-- 샘플 HWP 파일은 [tests/fixtures](tests/fixtures) 아래에 있습니다.
-- API/Converter/LlamaIndex 테스트는 각각 [tests/test_rest_api.py](tests/test_rest_api.py), [tests/test_python_api.py](tests/test_python_api.py), [tests/test_llama_index_api.py](tests/test_llama_index_api.py)로 분리되어 있습니다.
+```bash
+rye sync              # 의존성 설치 (항상 먼저 실행)
+rye run test          # 테스트 (pytest, 병렬)
+rye run test-cov      # 테스트 + 커버리지
+rye run test-cov-html # 테스트 + 커버리지 + HTML 리포트
+rye run benchmark     # 벤치마크 실행
+rye run serve         # BentoML API 서버 실행
+rye run docs          # 문서 로컬 서버
+```
 
-## 통합 지점
+## 변환 파이프라인
 
-- 외부 의존성: pyhwp CLI 도구 설치 필요 (없으면 변환 실패).
-- BentoML API는 `ConversionResponse` 모델로 바이너리(ODT) 콘텐츠를 base64 인코딩하여 반환합니다.
+1. `HWPConverter`가 pyhwp CLI(`hwp5html`, `hwp5odt`)를 subprocess로 호출
+2. 결과는 `ConversionResult` 데이터클래스로 반환 (`content`, `pipeline`, `converted_at`)
+3. 임시 디렉터리 사용 → `finally`에서 반드시 정리
 
-## 기억해야 할 핵심 규칙 (Memory Checklist)
+```python
+# 사용 예시
+from hwp_parser.core import HWPConverter
+result = HWPConverter().to_markdown("file.hwp")
+print(result.content)
+```
 
-- 변환 진입점: `HWPConverter` ([src/hwp_parser/core/converter.py](src/hwp_parser/core/converter.py)).
-- API 진입점: `HWPService` ([src/hwp_parser/adapters/api/service.py](src/hwp_parser/adapters/api/service.py)).
-- LlamaIndex 진입점: `HWPReader` ([src/hwp_parser/adapters/llama_index/reader.py](src/hwp_parser/adapters/llama_index/reader.py)).
-- 테스트 파일 분리: REST API/[tests/test_rest_api.py](tests/test_rest_api.py), Python API/[tests/test_python_api.py](tests/test_python_api.py), LlamaIndex/[tests/test_llama_index_api.py](tests/test_llama_index_api.py), 벤치마크/[tests/benchmarks.py](tests/benchmarks.py).
-- 환경설정 로드: `.env` 및 환경변수는 [src/hwp_parser/adapters/api/config.py](src/hwp_parser/adapters/api/config.py)에서 직접 파싱.
-- 기본 워크플로우 명령: `rye sync`, `rye run test`, `rye run test-cov`, `rye run test-cov-html`, `rye run serve`, `rye run benchmark`.
-- Markdown 변환은 `html-to-markdown`의 `ConversionOptions` + `convert` 사용.
-- 변환은 임시 디렉터리 사용 후 `finally`에서 정리(누락 금지).
+## 테스트 작성 규칙
+
+- **fixture는 `tests/fixtures/`에 있는 실제 HWP 파일 사용**
+- **pytest fixture 스코프 주의**: `session` 스코프 fixture와 `function` 스코프 테스트 혼용 시 `ScopeMismatch` 에러 발생
+- **벤치마크에서 fixture 의존성 피하기**: `@pytest.fixture`가 아닌 일반 헬퍼 함수 사용
+
+```python
+# ❌ ScopeMismatch 유발
+@pytest.fixture(scope="session")
+def my_fixture(): ...
+
+def test_something(my_fixture): ...  # function scope에서 session fixture 사용
+
+# ✅ 벤치마크에서는 직접 호출
+def get_sample_files():
+    return list(Path("tests/fixtures").glob("*.hwp"))
+
+def test_benchmark(benchmark):
+    files = get_sample_files()  # fixture 대신 직접 호출
+```
+
+## GitHub Actions CI
+
+- 워크플로우: `.github/workflows/coverage.yml`
+- 커버리지 배지: `.github/badges/coverage.svg` (자동 업데이트)
+- **Rye 설치 시 반드시 curl 사용** (pipx 아님)
+
+## 설정/환경변수
+
+REST API 설정 (`src/hwp_parser/adapters/api/config.py`):
+- `HWP_SERVICE_PORT` - 서버 포트
+- `HWP_SERVICE_TIMEOUT` - 요청 타임아웃
+- `HWP_SERVICE_CORS_ENABLED` - CORS 활성화
+
+## 외부 의존성
+
+- **pyhwp**: HWP 파일 파서 (CLI 도구 `hwp5html`, `hwp5odt` 필요)
+- **BentoML**: REST API 프레임워크
+- **LlamaIndex**: RAG 파이프라인 통합
+
+---
+
+## 기억해야 할 것 (Memory Checklist)
+
+| 항목 | 내용 |
+|------|------|
+| 패키지 관리 | `rye` (pip 아님, uv 기반) |
+| 의존성 설치 | `rye sync` |
+| 글로벌 도구 | `rye tools install <pkg>` |
+| 테스트 실행 | `rye run test` |
+| 변환 진입점 | `HWPConverter` |
+| API 진입점 | `HWPService` |
+| LlamaIndex 진입점 | `HWPReader` |
+| CI Rye 설치 | curl (pipx 아님) |
