@@ -15,17 +15,19 @@ class TestConfigLoading:
         """미설정 환경변수 → 기본값 반환.
 
         Given: 존재하지 않는 환경변수 키
-        When: _get_str, _get_int, _get_bool 호출
+        When: _get_str, _get_int, _get_float, _get_bool 호출
         Then: 각각 지정한 기본값 반환
         """
         from hwp_parser.adapters.api.config import (
             _get_bool,
+            _get_float,
             _get_int,
             _get_str,
         )
 
         assert _get_str("__NONEXISTENT_VAR__", "default") == "default"
         assert _get_int("__NONEXISTENT_VAR__", 42) == 42
+        assert _get_float("__NONEXISTENT_VAR__", 3.14) == 3.14
         assert _get_bool("__NONEXISTENT_VAR__", True) is True
         assert _get_bool("__NONEXISTENT_VAR__", False) is False
 
@@ -36,18 +38,19 @@ class TestConfigLoading:
         When: config 인스턴스 접근
         Then: 필수 필드들이 유효한 범위 내 값 보유
         """
+        # load config data as an instance.
         from hwp_parser.adapters.api.config import config
 
-        assert config.name is not None
-        assert config.workers >= 1
-        assert config.timeout > 0
-        assert config.port > 0
+        assert config.name is not None  # 서비스 이름
+        assert config.workers >= 1  # 한글 변환 시, 병렬화에 사용할 워커 수
+        assert config.timeout > 0  # 요청 타임아웃 (초 단위, 실수 허용)
+        assert config.port > 0  # HTTP 포트
 
     def test_config_from_env(self) -> None:
         """환경변수 설정 → 헬퍼 함수 반영.
 
         Given: HWP_SERVICE_* 환경변수들 설정
-        When: _get_str, _get_int, _get_bool 호출
+        When: _get_str, _get_int, _get_float, _get_bool 호출
         Then: 환경변수 값이 정확히 반환
         """
         with mock.patch.dict(
@@ -55,20 +58,21 @@ class TestConfigLoading:
             {
                 "HWP_SERVICE_NAME": "test-service",
                 "HWP_SERVICE_WORKERS": "4",
-                "HWP_SERVICE_TIMEOUT": "600",
+                "HWP_SERVICE_TIMEOUT": "600.5",
                 "HWP_SERVICE_PORT": "8080",
                 "HWP_SERVICE_CORS_ENABLED": "true",
             },
         ):
             from hwp_parser.adapters.api.config import (
                 _get_bool,
+                _get_float,
                 _get_int,
                 _get_str,
             )
 
             assert _get_str("HWP_SERVICE_NAME", "default") == "test-service"
             assert _get_int("HWP_SERVICE_WORKERS", 1) == 4
-            assert _get_int("HWP_SERVICE_TIMEOUT", 300) == 600
+            assert _get_float("HWP_SERVICE_TIMEOUT", 300.0) == 600.5
             assert _get_int("HWP_SERVICE_PORT", 3000) == 8080
             assert _get_bool("HWP_SERVICE_CORS_ENABLED", False) is True
 
@@ -91,6 +95,36 @@ class TestConfigHelpers:
         with mock.patch.dict(os.environ, {"TEST_INT": "not_a_number"}):
             result = _get_int("TEST_INT", 42)
             assert result == 42
+
+    def test_get_float_with_valid_values(self) -> None:
+        """실수 문자열 → float 변환.
+
+        Given: TEST_FLOAT="3.14" 또는 "42"
+        When: _get_float 호출
+        Then: 실수로 파싱된 값 반환
+
+        정수 문자열도 실수로 변환 가능.
+        """
+        from hwp_parser.adapters.api.config import _get_float
+
+        with mock.patch.dict(os.environ, {"TEST_FLOAT": "3.14"}):
+            assert _get_float("TEST_FLOAT", 0.0) == 3.14
+
+        with mock.patch.dict(os.environ, {"TEST_FLOAT": "42"}):
+            assert _get_float("TEST_FLOAT", 0.0) == 42.0
+
+    def test_get_float_with_invalid_value(self) -> None:
+        """파싱 불가 실수 → 기본값 fallback.
+
+        Given: TEST_FLOAT="not_a_number" (파싱 불가)
+        When: _get_float("TEST_FLOAT", 3.14) 호출
+        Then: 예외 없이 기본값 3.14 반환
+        """
+        from hwp_parser.adapters.api.config import _get_float
+
+        with mock.patch.dict(os.environ, {"TEST_FLOAT": "not_a_number"}):
+            result = _get_float("TEST_FLOAT", 3.14)
+            assert result == 3.14
 
     def test_get_bool_variations(self) -> None:
         """다양한 truthy/falsy 문자열 → 불리언 변환.

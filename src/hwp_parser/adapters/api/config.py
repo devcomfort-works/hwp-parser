@@ -65,6 +65,17 @@ def _get_int(key: str, default: int) -> int:
         return default
 
 
+def _get_float(key: str, default: float) -> float:
+    """환경변수에서 실수 값 가져오기"""
+    value = os.environ.get(key)
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
 def _get_str(key: str, default: str) -> str:
     """환경변수에서 문자열 값 가져오기"""
     return os.environ.get(key, default)
@@ -96,8 +107,8 @@ class ServiceConfig:
     # 워커 수 (프로세스 병렬화)
     workers: int = _get_int("HWP_SERVICE_WORKERS", 1)
 
-    # 요청 타임아웃 (초)
-    timeout: int = _get_int("HWP_SERVICE_TIMEOUT", 300)
+    # 요청 타임아웃 (초, 실수 허용)
+    timeout: float = _get_float("HWP_SERVICE_TIMEOUT", 300.0)
 
     # 최대 동시 요청 수
     max_concurrency: int = _get_int("HWP_SERVICE_MAX_CONCURRENCY", 50)
