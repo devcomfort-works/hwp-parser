@@ -160,8 +160,8 @@ curl -X POST http://localhost:3000/convert/markdown \
 
 ## 지원 및 기여
 
-- [GitHub Issues](https://github.com/devcomfort/hwp-parser/issues) - 버그 리포트 및 기능 요청
-- [GitHub Repository](https://github.com/devcomfort/hwp-parser) - 소스 코드 및 기여
+- [GitHub Issues](https://github.com/devcomfort-works/hwp-parser/issues) - 버그 리포트 및 기능 요청
+- [GitHub Repository](https://github.com/devcomfort-works/hwp-parser) - 소스 코드 및 기여
 
 ---
 

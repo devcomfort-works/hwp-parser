@@ -61,6 +61,8 @@ with open("output.html", "w") as f:
 HWP 파일을 Markdown으로 변환합니다. **가장 권장되는 변환 방식**입니다.
 
 ```python
+from pathlib import Path
+
 result = converter.to_markdown("document.hwp")
 
 # 파일로 저장

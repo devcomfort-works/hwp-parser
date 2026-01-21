@@ -71,14 +71,10 @@ bentoml serve hwp_parser.adapters.api:HWPService
 curl -X POST http://localhost:3000/convert/markdown -F "file=@document.hwp"
 ```
 
-## 문서
-
-📖 **[공식 문서](https://devcomfort.github.io/hwp-parser/)** - 설치, 사용법, API 레퍼런스
-
 ## 개발
 
 ```bash
-git clone https://github.com/devcomfort/hwp-parser.git
+git clone https://github.com/devcomfort-works/hwp-parser.git
 cd hwp-parser
 rye sync          # 의존성 설치
 rye run test      # 테스트 실행

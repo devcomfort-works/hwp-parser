@@ -7,7 +7,7 @@ BentoML 기반의 REST API 서버를 실행하고 사용하는 방법을 설명�
 REST API 서버를 사용하려면 추가 의존성을 설치해야 합니다:
 
 ```bash
-pip install hwp-parser[bentoml]
+pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 ```
 
 ## 서버 실행

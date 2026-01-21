@@ -84,7 +84,7 @@ uv add git+https://github.com/devcomfort-works/hwp-parser.git --extra all
 
 ```bash
 # 저장소 클론
-git clone https://github.com/devcomfort/hwp-parser.git
+git clone https://github.com/devcomfort-works/hwp-parser.git
 cd hwp-parser
 
 # rye 사용 시 (권장)

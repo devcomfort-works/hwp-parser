@@ -7,7 +7,7 @@ LlamaIndex와 통합하여 RAG(Retrieval-Augmented Generation) 파이프라인�
 LlamaIndex 어댑터를 사용하려면 추가 의존성을 설치해야 합니다:
 
 ```bash
-pip install hwp-parser[llama-index]
+pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 ```
 
 ## 기본 사용법
@@ -316,7 +316,7 @@ def load_data(
     """
 ```
 
-> ⚠️ ODT 포맷은 바이너리이므로 지원하지 않습니다.
+> ⚠️ ODT 포맷은 바이너리이므로 base64로 인코딩되어 Document.text에 저장됩니다.
 
 #### Document 메타데이터
 

@@ -54,7 +54,7 @@ which python
 pip list | grep hwp-parser
 
 # 재설치
-pip install --upgrade hwp-parser
+pip install --upgrade git+https://github.com/devcomfort-works/hwp-parser.git
 ```
 
 ---
@@ -307,7 +307,7 @@ Settings.llm = OpenAI(
 
 문제가 해결되지 않으면:
 
-1. [GitHub Issues](https://github.com/devcomfort/hwp-parser/issues)에서 기존 이슈 검색
+1. [GitHub Issues](https://github.com/devcomfort-works/hwp-parser/issues)에서 기존 이슈 검색
 2. 새 이슈 생성 시 다음 정보 포함:
    - Python 버전: `python --version`
    - 패키지 버전: `pip show hwp-parser`
