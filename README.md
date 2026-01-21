@@ -39,17 +39,41 @@ print(result.content)
 ## 설치 옵션
 
 ```bash
-# 기본 설치
+# pip 기본 설치
 pip install git+https://github.com/devcomfort-works/hwp-parser.git
 
-# LlamaIndex 어댑터 포함
+# pip LlamaIndex 어댑터 포함
 pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 
-# REST API 서버 포함
+# pip REST API 서버 포함
 pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 
-# 전체 기능 포함
+# pip 전체 기능 포함
 pip install "hwp-parser[all] @ git+https://github.com/devcomfort-works/hwp-parser.git"
+
+# uv 기본 설치
+uv add git+https://github.com/devcomfort-works/hwp-parser.git
+
+# uv LlamaIndex 어댑터 포함
+uv add "git+https://github.com/devcomfort-works/hwp-parser.git[llama-index]"
+
+# uv REST API 서버 포함
+uv add "git+https://github.com/devcomfort-works/hwp-parser.git[bentoml]"
+
+# uv 전체 기능 포함
+uv add "git+https://github.com/devcomfort-works/hwp-parser.git[all]"
+
+# rye 기본 설치
+rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
+
+# rye LlamaIndex 어댑터 포함
+rye add "hwp-parser[llama-index]" --git https://github.com/devcomfort-works/hwp-parser.git
+
+# rye REST API 서버 포함
+rye add "hwp-parser[bentoml]" --git https://github.com/devcomfort-works/hwp-parser.git
+
+# rye 전체 기능 포함
+rye add "hwp-parser[all]" --git https://github.com/devcomfort-works/hwp-parser.git
 ```
 
 ## 사용 예시
