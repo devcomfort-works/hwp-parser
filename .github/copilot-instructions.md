@@ -3,6 +3,7 @@
 ## ⚠️ 절대 규칙 (CRITICAL)
 
 ### Rye는 pip이 아니다
+
 ```bash
 # ❌ 절대 하지 마라
 pip install ...
@@ -20,6 +21,7 @@ rye tools install <package>   # 글로벌 도구 설치 (coverage-badge 등)
 - GitHub Actions에서 Rye 설치: `curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash`
 
 ### 행동 원칙
+
 - **확인만 하지 말고 바로 실행해라.** 문서 확인 후 "맞네요"로 끝내지 마라.
 - **물어보지 말고 해라.** 명확한 작업이면 허락 구하지 마라.
 - **커밋은 논리적으로 분리해라.** 파일별이 아닌 변경 의도별로.
@@ -36,7 +38,7 @@ src/hwp_parser/
 │   └── llama_index/reader.py  # HWPReader (LlamaIndex 통합)
 tests/
 ├── test_python_api.py     # Python API 테스트
-├── test_rest_api.py       # REST API 테스트  
+├── test_rest_api.py       # REST API 테스트
 ├── test_llama_index_api.py # LlamaIndex 테스트
 ├── benchmarks.py          # 성능 벤치마크
 └── fixtures/              # 테스트용 HWP 파일들
@@ -97,6 +99,7 @@ def test_benchmark(benchmark):
 ## 설정/환경변수
 
 REST API 설정 (`src/hwp_parser/adapters/api/config.py`):
+
 - `HWP_SERVICE_PORT` - 서버 포트
 - `HWP_SERVICE_TIMEOUT` - 요청 타임아웃
 - `HWP_SERVICE_CORS_ENABLED` - CORS 활성화
@@ -111,13 +114,13 @@ REST API 설정 (`src/hwp_parser/adapters/api/config.py`):
 
 ## 기억해야 할 것 (Memory Checklist)
 
-| 항목 | 내용 |
-|------|------|
-| 패키지 관리 | `rye` (pip 아님, uv 기반) |
-| 의존성 설치 | `rye sync` |
-| 글로벌 도구 | `rye tools install <pkg>` |
-| 테스트 실행 | `rye run test` |
-| 변환 진입점 | `HWPConverter` |
-| API 진입점 | `HWPService` |
-| LlamaIndex 진입점 | `HWPReader` |
-| CI Rye 설치 | curl (pipx 아님) |
+| 항목              | 내용                      |
+| ----------------- | ------------------------- |
+| 패키지 관리       | `rye` (pip 아님, uv 기반) |
+| 의존성 설치       | `rye sync`                |
+| 글로벌 도구       | `rye tools install <pkg>` |
+| 테스트 실행       | `rye run test`            |
+| 변환 진입점       | `HWPConverter`            |
+| API 진입점        | `HWPService`              |
+| LlamaIndex 진입점 | `HWPReader`               |
+| CI Rye 설치       | curl (pipx 아님)          |
