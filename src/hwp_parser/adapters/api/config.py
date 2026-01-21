@@ -20,10 +20,8 @@ def _load_dotenv() -> None:
         if env_file.exists():
             _parse_env_file(env_file)
             break
-        # pyproject.toml이 있으면 프로젝트 루트
+        # pyproject.toml이 있으면 프로젝트 루트로 간주하고 탐색 중단
         if (parent / "pyproject.toml").exists():
-            if env_file.exists():
-                _parse_env_file(env_file)
             break
 
 
