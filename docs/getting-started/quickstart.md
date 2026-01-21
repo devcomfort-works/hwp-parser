@@ -197,5 +197,4 @@ print(documents[0].metadata)
 
 - [Core 사용법](../guide/core-usage.md): 변환 옵션 상세 설명
 - [LlamaIndex 어댑터](../guide/llama-index.md): RAG 파이프라인 고급 사용법
-- [REST API](../guide/rest-api.md): API 엔드포인트 전체 목록
-- [환경변수 설정](../advanced/configuration.md): API 서버 설정 커스터마이징
+- [REST API](../guide/rest-api.md): API 엔드포인트 전체 목록 및 환경변수 설정

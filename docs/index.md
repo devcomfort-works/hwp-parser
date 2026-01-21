@@ -2,7 +2,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Coverage: 76%](https://img.shields.io/badge/coverage-76%25-green.svg)](https://github.com/devcomfort/hwp-parser)
+[![Coverage](https://raw.githubusercontent.com/devcomfort-works/hwp-parser/main/.github/badges/coverage.svg)](https://github.com/devcomfort-works/hwp-parser/actions/workflows/coverage.yml)
 
 **HWP 파일을 다양한 포맷으로 변환하는 Python 라이브러리**
 
@@ -49,7 +49,7 @@ print(result.content)
 | 🦙 **LlamaIndex 통합** | RAG 파이프라인에서 HWP 문서 활용 |
 | 🌐 **REST API**        | BentoML 기반 HTTP API 서버       |
 | ⚡ **간편한 설정**     | 환경변수(.env) 기반 설정 지원    |
-| 🧪 **테스트 검증**     | 76% 커버리지, 42개 테스트        |
+| 🧪 **테스트 검증**     | 100% 커버리지, 88개 테스트       |
 
 ---
 
@@ -176,9 +176,3 @@ curl -X POST http://localhost:3000/convert/markdown \
 - [pyhwp](https://github.com/mete0r/pyhwp) - HWP 파일 파서 (핵심 의존성)
 - [LlamaIndex](https://www.llamaindex.ai/) - LLM 데이터 프레임워크
 - [BentoML](https://www.bentoml.com/) - ML 서비스 프레임워크
-
----
-
-## 라이선스
-
-[AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0) - pyhwp 라이선스 준수

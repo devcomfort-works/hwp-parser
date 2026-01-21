@@ -30,10 +30,10 @@ HWP Parser는 다음 라이브러리를 사용합니다:
 
 | 사용 목적                       | 설치 명령어                           | 다음 단계                                    |
 | ------------------------------- | ------------------------------------- | -------------------------------------------- |
-| HWP → 텍스트/HTML/Markdown 변환 | `pip install hwp-parser`              | [빠른 시작](quickstart.md)                   |
-| LlamaIndex RAG 파이프라인       | `pip install hwp-parser[llama-index]` | [LlamaIndex 가이드](../guide/llama-index.md) |
-| REST API 서버                   | `pip install hwp-parser[bentoml]`     | [REST API 가이드](../guide/rest-api.md)      |
-| 전체 기능                       | `pip install hwp-parser[all]`         | [설치 가이드](installation.md)               |
+| HWP → 텍스트/HTML/Markdown 변환 | `pip install git+https://github.com/devcomfort-works/hwp-parser.git`              | [빠른 시작](quickstart.md)                   |
+| LlamaIndex RAG 파이프라인       | `pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"` | [LlamaIndex 가이드](../guide/llama-index.md) |
+| REST API 서버                   | `pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"`     | [REST API 가이드](../guide/rest-api.md)      |
+| 전체 기능                       | `pip install "hwp-parser[all] @ git+https://github.com/devcomfort-works/hwp-parser.git"`         | [설치 가이드](installation.md)               |
 
 ---
 
