@@ -73,6 +73,9 @@ FileNotFoundError: [Errno 2] No such file or directory: 'document.hwp'
 
 ```python
 from pathlib import Path
+from hwp_parser import HWPConverter
+
+converter = HWPConverter()
 
 # 절대 경로 사용
 hwp_path = Path("/full/path/to/document.hwp")
@@ -139,6 +142,8 @@ result = converter.to_html("document.hwp")
 #### 해결 방법
 
 ```python
+from pathlib import Path
+
 # 결과 저장 시 UTF-8 명시
 result = converter.to_markdown("document.hwp")
 Path("output.md").write_text(result.content, encoding="utf-8")
@@ -227,7 +232,8 @@ MemoryError
 
 ```python
 import gc
-from hwp_parser.adapters.llama_index import HWPReader
+from pathlib import Path
+from hwp_parser import HWPReader
 
 reader = HWPReader()
 all_documents = []
@@ -287,12 +293,15 @@ Settings.llm = OpenAI(
 2. **병렬 처리**
 
    ```python
+   from pathlib import Path
    from multiprocessing import Pool
+   from hwp_parser import HWPConverter
 
    def convert_file(path):
        converter = HWPConverter()
        return converter.to_markdown(path)
 
+   hwp_files = list(Path("documents").glob("*.hwp"))
    with Pool(4) as pool:
        results = pool.map(convert_file, hwp_files)
    ```

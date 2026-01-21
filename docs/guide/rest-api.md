@@ -19,7 +19,11 @@ pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-p
 rye run serve
 
 # 또는 직접 실행
-bentoml serve hwp_parser.adapters.api:HWPService
+bentoml serve hwp_parser:HWPService
+
+# 또는 Python에서
+from hwp_parser import serve
+serve()
 ```
 
 서버는 기본적으로 `http://localhost:3000`에서 실행됩니다.
@@ -29,7 +33,7 @@ bentoml serve hwp_parser.adapters.api:HWPService
 파일 변경 시 자동으로 서버를 재시작합니다:
 
 ```bash
-bentoml serve hwp_parser.adapters.api:HWPService --reload
+bentoml serve hwp_parser:HWPService --reload
 ```
 
 ## 환경변수 설정
@@ -315,7 +319,7 @@ done
 ### Gunicorn 설정
 
 ```bash
-bentoml serve hwp_parser.adapters.api:HWPService \
+bentoml serve hwp_parser:HWPService \
     --workers 4 \
     --timeout 300
 ```

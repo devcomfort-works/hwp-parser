@@ -99,7 +99,7 @@ pip install -e ".[dev]"
 설치가 완료되었는지 확인합니다:
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter()
 print("HWP Parser 설치 완료!")

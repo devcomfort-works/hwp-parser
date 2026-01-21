@@ -18,7 +18,7 @@ pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/h
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 
 reader = HWPReader()
 
@@ -36,6 +36,8 @@ print(doc.metadata)       # 메타데이터
 기본적으로 Markdown 포맷으로 변환됩니다. 다른 포맷을 지정할 수 있습니다:
 
 ```python
+from pathlib import Path
+
 # Markdown (기본값)
 documents = reader.load_data(Path("document.hwp"))
 
@@ -51,6 +53,8 @@ documents = reader.load_data(Path("document.hwp"), output_format="html")
 문서에 추가 메타데이터를 포함할 수 있습니다:
 
 ```python
+from pathlib import Path
+
 documents = reader.load_data(
     Path("document.hwp"),
     extra_info={
@@ -78,7 +82,7 @@ print(documents[0].metadata)
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 from llama_index.core import VectorStoreIndex, Settings
 from llama_index.llms.openai import OpenAI
 
@@ -102,7 +106,7 @@ print(response)
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 from llama_index.core import VectorStoreIndex
 
 reader = HWPReader()
@@ -121,7 +125,7 @@ index = VectorStoreIndex.from_documents(all_documents)
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 
 reader = HWPReader()
 
@@ -162,6 +166,8 @@ nodes = retriever.retrieve("휴가 정책")
 대용량 문서의 경우 적절한 청킹 전략을 사용합니다:
 
 ```python
+from pathlib import Path
+from hwp_parser import HWPReader
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core import VectorStoreIndex
 
@@ -194,7 +200,7 @@ index = VectorStoreIndex.from_documents(documents)
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 from llama_index.core import VectorStoreIndex, Settings
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -255,12 +261,15 @@ if __name__ == "__main__":
 대량의 문서를 처리할 때 메모리 부족이 발생할 수 있습니다:
 
 ```python
+from pathlib import Path
+import gc
+
 # 배치 처리로 메모리 관리
+hwp_files = list(Path("docs").glob("*.hwp"))
 batch_size = 10
 for i in range(0, len(hwp_files), batch_size):
     batch = hwp_files[i:i+batch_size]
-    # 배치 처리 후 가비지 컬렉션
-    import gc
+    # 배치 처리 후 가비지 컴렉션
     gc.collect()
 ```
 
@@ -269,6 +278,12 @@ for i in range(0, len(hwp_files), batch_size):
 일부 파일 변환 실패 시 계속 진행:
 
 ```python
+from pathlib import Path
+from hwp_parser import HWPReader
+
+reader = HWPReader()
+hwp_files = list(Path("docs").glob("*.hwp"))
+
 documents = []
 for hwp_file in hwp_files:
     try:

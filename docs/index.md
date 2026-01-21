@@ -15,7 +15,7 @@ HWP Parser는 한글과컴퓨터의 HWP 파일을 텍스트, HTML, Markdown, ODT
 [pyhwp](https://github.com/mete0r/pyhwp) CLI 도구를 래핑하여 Python 코드에서 쉽게 HWP 파일을 처리할 수 있습니다.
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 result = HWPConverter().to_markdown("document.hwp")
 print(result.content)
@@ -73,7 +73,7 @@ rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 ### 기본 사용
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter()
 result = converter.to_markdown("document.hwp")
@@ -97,7 +97,7 @@ print(result.content)
 ### 📦 파일 변환이 필요할 때
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter()
 markdown = converter.to_markdown("report.hwp")
@@ -110,7 +110,7 @@ text = converter.to_text("report.hwp")
 ### 🦙 LLM/RAG 파이프라인을 구축할 때
 
 ```python
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 from llama_index.core import VectorStoreIndex
 
 reader = HWPReader()
@@ -126,8 +126,14 @@ response = index.as_query_engine().query("휴가 정책이 뭐야?")
 
 ```bash
 # 서버 실행
-bentoml serve hwp_parser.adapters.api:HWPService
+bentoml serve hwp_parser:HWPService
 
+# 또는 Python에서
+from hwp_parser import serve
+serve()
+```
+
+```bash
 # 클라이언트 요청
 curl -X POST http://localhost:3000/convert/markdown \
     -F "file=@document.hwp"

@@ -26,7 +26,7 @@ pip install git+https://github.com/devcomfort-works/hwp-parser.git
 
 ```python
 from pathlib import Path
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 # Converter 인스턴스 생성
 converter = HWPConverter()
@@ -39,6 +39,8 @@ print(result.content)
 ### 다양한 포맷
 
 ```python
+from pathlib import Path
+
 # 텍스트로 변환
 text_result = converter.to_text("document.hwp")
 
@@ -54,7 +56,7 @@ Path("output.odt").write_bytes(odt_result.content)
 
 ```python
 from pathlib import Path
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter()
 
@@ -139,7 +141,7 @@ pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/h
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 
 reader = HWPReader()
 
@@ -154,7 +156,7 @@ print(documents[0].text)
 
 ```python
 from pathlib import Path
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 from llama_index.core import VectorStoreIndex
 
 reader = HWPReader()
@@ -176,6 +178,10 @@ print(response)
 ### 메타데이터 추가
 
 ```python
+from pathlib import Path
+from hwp_parser import HWPReader
+
+reader = HWPReader()
 documents = reader.load_data(
     Path("policy.hwp"),
     extra_info={

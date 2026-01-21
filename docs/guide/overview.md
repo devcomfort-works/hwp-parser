@@ -41,20 +41,20 @@ HWP Parser의 다양한 기능을 활용하는 방법을 안내합니다.
 ### Core - 파일 변환
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 result = HWPConverter().to_markdown("document.hwp")
 ```
 
 ### LlamaIndex - RAG 파이프라인
 
 ```python
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 docs = HWPReader().load_data("document.hwp")
 ```
 
 ### REST API - HTTP 서비스
 
 ```bash
-bentoml serve hwp_parser.adapters.api:HWPService
+bentoml serve hwp_parser:HWPService
 # curl -F "file=@document.hwp" localhost:3000/convert/markdown
 ```

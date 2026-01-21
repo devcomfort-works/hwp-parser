@@ -22,7 +22,7 @@ rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 > 📦 **PyPI 배포 예정**: 추후 PyPI에 `hwp-parser`라는 이름으로 배포될 예정입니다.
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 result = HWPConverter().to_markdown("document.hwp")
 print(result.content)
@@ -57,7 +57,7 @@ pip install "hwp-parser[all] @ git+https://github.com/devcomfort-works/hwp-parse
 ### LlamaIndex RAG
 
 ```python
-from hwp_parser.adapters.llama_index import HWPReader
+from hwp_parser import HWPReader
 from llama_index.core import VectorStoreIndex
 
 documents = HWPReader().load_data("document.hwp")
@@ -67,7 +67,16 @@ index = VectorStoreIndex.from_documents(documents)
 ### REST API
 
 ```bash
-bentoml serve hwp_parser.adapters.api:HWPService
+# 서버 실행
+bentoml serve hwp_parser:HWPService
+
+# 또는 Python에서
+from hwp_parser import serve
+serve()
+```
+
+```bash
+# API 호출
 curl -X POST http://localhost:3000/convert/markdown -F "file=@document.hwp"
 ```
 

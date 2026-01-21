@@ -7,7 +7,7 @@
 `HWPConverter`는 HWP 파일 변환의 핵심 클래스입니다.
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter()
 ```
@@ -15,7 +15,7 @@ converter = HWPConverter()
 성능을 확인하고 싶다면 `verbose=True`로 로깅을 활성화할 수 있습니다.
 
 ```python
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter(verbose=True)
 result = converter.to_markdown("document.hwp")
@@ -78,6 +78,8 @@ Markdown 변환은 `html-to-markdown` 라이브러리를 사용합니다.
 HWP 파일을 ODT(Open Document Text) 형식으로 변환합니다.
 
 ```python
+from pathlib import Path
+
 result = converter.to_odt("document.hwp")
 
 # 바이너리 파일로 저장
@@ -135,7 +137,7 @@ data = result.to_dict()
 
 ```python
 from pathlib import Path
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 converter = HWPConverter()
 
@@ -197,13 +199,15 @@ for hwp_file in hwp_files:
 CPU 바운드 작업이므로 `multiprocessing`을 사용한 병렬 처리가 효과적입니다:
 
 ```python
+from pathlib import Path
 from multiprocessing import Pool
-from hwp_parser.core import HWPConverter
+from hwp_parser import HWPConverter
 
 def convert_file(hwp_path):
     converter = HWPConverter()
     return converter.to_markdown(hwp_path)
 
+hwp_files = list(Path("documents").glob("*.hwp"))
 with Pool(4) as pool:
     results = pool.map(convert_file, hwp_files)
 ```
