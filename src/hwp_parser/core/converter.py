@@ -319,7 +319,7 @@ class HWPConverter:
             ImportError: html-to-markdown이 설치되지 않은 경우
         """
         try:
-            from html_to_markdown import convert_to_markdown
+            from html_to_markdown import ConversionOptions, convert
         except ImportError:
             raise ImportError(
                 "html-to-markdown 라이브러리가 필요합니다: pip install html-to-markdown"
@@ -333,9 +333,8 @@ class HWPConverter:
         html_result = self.to_html(file_path)
 
         # 2단계: HTML → Markdown (to_html()은 항상 str을 반환)
-        markdown_content = convert_to_markdown(
-            cast(str, html_result.content), escape_misc=False
-        )
+        options = ConversionOptions(escape_misc=False)
+        markdown_content = convert(cast(str, html_result.content), options)
         markdown_content = html.unescape(markdown_content)
 
         result = ConversionResult(
