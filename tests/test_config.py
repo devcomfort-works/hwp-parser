@@ -1,6 +1,4 @@
-"""
-설정 모듈 테스트
-"""
+"""설정 모듈 테스트."""
 
 from __future__ import annotations
 
@@ -11,16 +9,14 @@ from unittest import mock
 
 # === 핵심 케이스 ===
 class TestConfigLoading:
-    """설정 로드 테스트"""
+    """설정 로드 테스트."""
 
     def test_default_config_values(self) -> None:
-        """기본 설정 값 확인.
+        """미설정 환경변수 → 기본값 반환.
 
-        Notes
-        -----
-        - 목적: 헬퍼 함수가 기본값을 반환하는지 검증.
-        - 로직: 미설정 환경변수에 대해 반환값 비교.
-        - 데이터: 하드코딩된 기본값.
+        Given: 존재하지 않는 환경변수 키
+        When: _get_str, _get_int, _get_bool 호출
+        Then: 각각 지정한 기본값 반환
         """
         from hwp_parser.adapters.api.config import (
             _get_bool,
@@ -28,37 +24,31 @@ class TestConfigLoading:
             _get_str,
         )
 
-        # 설정되지 않은 환경변수에서 기본값 반환 확인
         assert _get_str("__NONEXISTENT_VAR__", "default") == "default"
         assert _get_int("__NONEXISTENT_VAR__", 42) == 42
         assert _get_bool("__NONEXISTENT_VAR__", True) is True
         assert _get_bool("__NONEXISTENT_VAR__", False) is False
 
     def test_config_instance_created(self) -> None:
-        """설정 인스턴스 생성 확인.
+        """config 인스턴스 정상 생성.
 
-        Notes
-        -----
-        - 목적: config 인스턴스가 생성되었는지 확인.
-        - 로직: 필드 기본 범위 검사.
-        - 데이터: 환경변수에 따라 달라질 수 있음.
+        Given: 모듈 임포트
+        When: config 인스턴스 접근
+        Then: 필수 필드들이 유효한 범위 내 값 보유
         """
         from hwp_parser.adapters.api.config import config
 
-        # 인스턴스가 생성되었는지만 확인 (값은 환경변수에 따라 다를 수 있음)
         assert config.name is not None
         assert config.workers >= 1
         assert config.timeout > 0
         assert config.port > 0
 
     def test_config_from_env(self) -> None:
-        """환경변수에서 설정 로드 검증.
+        """환경변수 설정 → 헬퍼 함수 반영.
 
-        Notes
-        -----
-        - 목적: 환경변수 값이 헬퍼 함수에 반영되는지 확인.
-        - 로직: mock.patch.dict로 환경변수 주입 후 반환값 비교.
-        - 데이터: 테스트용 환경변수 값.
+        Given: HWP_SERVICE_* 환경변수들 설정
+        When: _get_str, _get_int, _get_bool 호출
+        Then: 환경변수 값이 정확히 반환
         """
         with mock.patch.dict(
             os.environ,
@@ -70,7 +60,6 @@ class TestConfigLoading:
                 "HWP_SERVICE_CORS_ENABLED": "true",
             },
         ):
-            # 환경변수 설정 후 헬퍼 함수 직접 테스트
             from hwp_parser.adapters.api.config import (
                 _get_bool,
                 _get_int,
@@ -86,31 +75,32 @@ class TestConfigLoading:
 
 # === 에지 케이스 ===
 class TestConfigHelpers:
-    """설정 헬퍼 함수 테스트"""
+    """설정 헬퍼 함수 테스트."""
 
     def test_get_int_with_invalid_value(self) -> None:
-        """잘못된 정수 값 처리 검증.
+        """파싱 불가 정수 → 기본값 fallback.
 
-        Notes
-        -----
-        - 목적: 숫자 파싱 실패 시 기본값 반환 확인.
-        - 로직: 잘못된 값 설정 후 반환값 비교.
-        - 데이터: TEST_INT=not_a_number.
+        Given: TEST_INT="not_a_number" (파싱 불가)
+        When: _get_int("TEST_INT", 42) 호출
+        Then: 예외 없이 기본값 42 반환
+
+        서비스 안정성을 위해 설정 오류 시 fallback 전략 사용.
         """
         from hwp_parser.adapters.api.config import _get_int
 
         with mock.patch.dict(os.environ, {"TEST_INT": "not_a_number"}):
             result = _get_int("TEST_INT", 42)
-            assert result == 42  # 기본값 반환
+            assert result == 42
 
     def test_get_bool_variations(self) -> None:
-        """다양한 불리언 값 처리 검증.
+        """다양한 truthy/falsy 문자열 → 불리언 변환.
 
-        Notes
-        -----
-        - 목적: truthy/falsey 문자열 처리 확인.
-        - 로직: 다양한 값으로 _get_bool 결과 비교.
-        - 데이터: true_values/false_values 리스트.
+        Given: "true", "1", "yes", "on" 등 truthy 값
+               "false", "0", "no", "off", "" 등 falsy 값
+        When: _get_bool 호출
+        Then: 각각 True/False 반환
+
+        대소문자 무관하게 일반적인 truthy/falsy 표현 모두 지원.
         """
         from hwp_parser.adapters.api.config import _get_bool
 
@@ -126,13 +116,11 @@ class TestConfigHelpers:
                 assert _get_bool("TEST_BOOL", True) is False, f"Failed for: {val}"
 
     def test_get_list(self) -> None:
-        """리스트 값 처리 검증.
+        """콤마 구분 문자열 → 리스트 파싱.
 
-        Notes
-        -----
-        - 목적: 콤마 분리 리스트 파싱 확인.
-        - 로직: TEST_LIST 설정 후 반환값 비교.
-        - 데이터: "http://localhost,https://example.com".
+        Given: TEST_LIST="http://localhost,https://example.com"
+        When: _get_list 호출
+        Then: ["http://localhost", "https://example.com"] 반환
         """
         from hwp_parser.adapters.api.config import _get_list
 
@@ -143,13 +131,13 @@ class TestConfigHelpers:
             assert result == ["http://localhost", "https://example.com"]
 
     def test_get_list_with_spaces(self) -> None:
-        """공백 포함 리스트 처리 검증.
+        """공백 포함 리스트 → trim 후 파싱.
 
-        Notes
-        -----
-        - 목적: 공백이 포함된 리스트 파싱 확인.
-        - 로직: 공백 포함 값 설정 후 반환값 비교.
-        - 데이터: " http://localhost , https://example.com ".
+        Given: TEST_LIST=" http://localhost , https://example.com "
+        When: _get_list 호출
+        Then: 공백 제거된 리스트 반환
+
+        사용자 입력 실수(공백)를 자동 보정.
         """
         from hwp_parser.adapters.api.config import _get_list
 
@@ -160,13 +148,13 @@ class TestConfigHelpers:
             assert result == ["http://localhost", "https://example.com"]
 
     def test_get_list_empty(self) -> None:
-        """빈 리스트 처리 검증.
+        """빈 문자열 → 빈 리스트.
 
-        Notes
-        -----
-        - 목적: 빈 문자열 입력 시 빈 리스트 반환 확인.
-        - 로직: TEST_LIST="" 설정 후 반환값 비교.
-        - 데이터: 빈 문자열.
+        Given: TEST_LIST=""
+        When: _get_list 호출
+        Then: [] 반환 (기본값 무시)
+
+        명시적 빈 값은 "비어있음"으로 해석.
         """
         from hwp_parser.adapters.api.config import _get_list
 
@@ -175,13 +163,11 @@ class TestConfigHelpers:
             assert result == []
 
     def test_get_list_default_when_missing(self) -> None:
-        """환경변수 미설정 시 기본값 반환 검증.
+        """환경변수 미설정 → 기본값 반환.
 
-        Notes
-        -----
-        - 목적: _get_list가 default를 반환하는 분기 커버.
-        - 로직: 환경변수 미설정 상태에서 호출.
-        - 데이터: default 리스트.
+        Given: TEST_LIST 환경변수 미설정
+        When: _get_list("TEST_LIST", ["default"]) 호출
+        Then: ["default"] 반환
         """
         from hwp_parser.adapters.api.config import _get_list
 
@@ -190,13 +176,11 @@ class TestConfigHelpers:
             assert result == ["default"]
 
     def test_load_dotenv_calls_parser(self, monkeypatch) -> None:
-        """_load_dotenv이 .env 파서를 호출하는지 검증.
+        """.env 파일 존재 → 파서 호출.
 
-        Notes
-        -----
-        - 목적: .env 존재 분기 커버.
-        - 로직: Path.exists를 조작해 .env 존재로 가정.
-        - 데이터: 가짜 .env 경로.
+        Given: .env 파일이 존재하는 상황 (mocked)
+        When: _load_dotenv() 호출
+        Then: _parse_env_file 함수 호출됨
         """
         from hwp_parser.adapters.api import config as cfg
 
@@ -205,7 +189,7 @@ class TestConfigHelpers:
         def _fake_parse(_path):
             called["called"] = True
 
-        def _fake_exists(self) -> bool:  # type: ignore[override]
+        def _fake_exists(self) -> bool:
             return self.name == ".env"
 
         monkeypatch.setattr(cfg, "_parse_env_file", _fake_parse)
@@ -215,13 +199,13 @@ class TestConfigHelpers:
         assert called["called"] is True
 
     def test_parse_env_file(self, tmp_path) -> None:
-        """.env 파서 동작 검증.
+        """.env 파일 파싱 → 환경변수 설정.
 
-        Notes
-        -----
-        - 목적: _parse_env_file이 주석/공백/따옴표를 처리하는지 확인.
-        - 로직: 임시 .env 파일 작성 후 환경변수 반영 여부 확인.
-        - 데이터: 임시 파일의 KEY=VALUE 라인.
+        Given: 주석, 따옴표, 공백이 포함된 .env 파일
+        When: _parse_env_file 호출
+        Then: 유효한 KEY=VALUE만 환경변수에 반영
+
+        주석(#)은 무시, 따옴표는 제거, 공백은 trim.
         """
         from hwp_parser.adapters.api.config import _parse_env_file
 
@@ -243,13 +227,13 @@ class TestConfigHelpers:
             assert os.environ["TEST_ENV_SPACES"] == "spaced"
 
     def test_parse_env_file_ignores_invalid_line(self, tmp_path: Path) -> None:
-        """'=' 없는 라인 무시 분기 검증.
+        """'=' 없는 라인 → 무시.
 
-        Notes
-        -----
-        - 목적: KEY=VALUE가 아닌 라인 스킵 분기 커버.
-        - 로직: 잘못된 라인 포함 후 환경변수 미설정 확인.
-        - 데이터: INVALIDLINE.
+        Given: .env 파일에 "INVALIDLINE" (= 없음)
+        When: _parse_env_file 호출
+        Then: 해당 라인 무시, 환경변수 미설정
+
+        잘못된 형식은 조용히 스킵하여 서비스 중단 방지.
         """
         from hwp_parser.adapters.api.config import _parse_env_file
 
@@ -261,13 +245,14 @@ class TestConfigHelpers:
             assert "INVALIDLINE" not in os.environ
 
     def test_parse_env_file_preserves_existing(self, tmp_path: Path) -> None:
-        """기존 환경변수 값 보존 검증.
+        """기존 환경변수 → 덮어쓰기 방지.
 
-        Notes
-        -----
-        - 목적: 이미 설정된 키는 덮어쓰지 않는 분기 커버.
-        - 로직: 기존 값 설정 후 .env 파싱 결과 확인.
-        - 데이터: TEST_ENV_EXISTING.
+        Given: TEST_ENV_EXISTING="original" 이미 설정
+               .env에 TEST_ENV_EXISTING=override
+        When: _parse_env_file 호출
+        Then: 기존 값 "original" 유지
+
+        런타임 환경변수가 .env보다 우선.
         """
         from hwp_parser.adapters.api.config import _parse_env_file
 
@@ -279,13 +264,13 @@ class TestConfigHelpers:
             assert os.environ["TEST_ENV_EXISTING"] == "original"
 
     def test_load_dotenv_skips_when_no_env(self, monkeypatch) -> None:
-        """.env 파일이 없을 때 파서 미호출 검증.
+        """.env 미존재 + pyproject.toml 발견 → 탐색 중단.
 
-        Notes
-        -----
-        - 목적: pyproject.toml 발견 시 break 분기 커버.
-        - 로직: .env는 False, pyproject.toml은 True로 설정.
-        - 데이터: 없음.
+        Given: .env 없음, pyproject.toml 존재
+        When: _load_dotenv() 호출
+        Then: 파서 미호출, 루프 종료
+
+        프로젝트 루트 감지 시 상위 디렉터리 탐색 중단.
         """
         from hwp_parser.adapters.api import config as cfg
 
@@ -294,7 +279,7 @@ class TestConfigHelpers:
         def _fake_parse(_path):
             called["called"] = True
 
-        def _fake_exists(self) -> bool:  # type: ignore[override]
+        def _fake_exists(self) -> bool:
             if self.name == ".env":
                 return False
             if self.name == "pyproject.toml":
@@ -308,13 +293,14 @@ class TestConfigHelpers:
         assert called["called"] is False
 
     def test_load_dotenv_env_found_in_pyproject_branch(self, monkeypatch) -> None:
-        """pyproject 분기에서 .env 발견 경로 검증.
+        """pyproject.toml 디렉터리에서 .env 발견 → 파서 호출.
 
-        Notes
-        -----
-        - 목적: 2차 env_file.exists True 분기 커버.
-        - 로직: .env exists 첫 호출 False, 두 번째 True로 조작.
-        - 데이터: 없음.
+        Given: 첫 번째 .env 체크 False, pyproject.toml True,
+               이후 .env 체크 True
+        When: _load_dotenv() 호출
+        Then: 파서 호출됨
+
+        pyproject.toml 옆의 .env 파일도 탐지.
         """
         from hwp_parser.adapters.api import config as cfg
 
@@ -324,7 +310,7 @@ class TestConfigHelpers:
         def _fake_parse(_path):
             called["called"] = True
 
-        def _fake_exists(self) -> bool:  # type: ignore[override]
+        def _fake_exists(self) -> bool:
             if self.name == ".env":
                 counter["env_calls"] += 1
                 return counter["env_calls"] > 1
@@ -339,13 +325,13 @@ class TestConfigHelpers:
         assert called["called"] is True
 
     def test_load_dotenv_no_parents(self, monkeypatch) -> None:
-        """parents가 비어있는 경우 루프 종료 분기 검증.
+        """parents 비어있음 → 루프 미진입.
 
-        Notes
-        -----
-        - 목적: for-loop 미진입 분기 커버.
-        - 로직: Path.resolve()가 parents=[]인 객체 반환.
-        - 데이터: 없음.
+        Given: Path.resolve()가 parents=[]인 객체 반환
+        When: _load_dotenv() 호출
+        Then: for-loop 미진입, 정상 종료
+
+        루트 디렉터리 등 특수 케이스 처리.
         """
         from hwp_parser.adapters.api import config as cfg
 

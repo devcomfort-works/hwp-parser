@@ -6,9 +6,9 @@ Issue #3: HWPReader가 LlamaIndex Document를 정상 반환하는지 확인
 
 from __future__ import annotations
 
-from pathlib import Path
 import builtins
 import importlib
+from pathlib import Path
 from typing import Literal
 
 import pytest
