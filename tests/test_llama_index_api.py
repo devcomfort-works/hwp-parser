@@ -1,8 +1,4 @@
-"""
-LlamaIndex API (HWPReader) 테스트
-
-Issue #3: HWPReader가 LlamaIndex Document를 정상 반환하는지 확인
-"""
+"""LlamaIndex API (HWPReader) 테스트."""
 
 from __future__ import annotations
 
@@ -17,44 +13,22 @@ from hwp_parser.adapters.llama_index import HWPReader
 
 
 # === 핵심 케이스 ===
+
+
 def _load_docs(reader: HWPReader, file_path: Path) -> list:
-    """HWPReader 로드 헬퍼.
-
-    Parameters
-    ----------
-    reader : HWPReader
-        LlamaIndex 리더.
-    file_path : Path
-        HWP 파일 경로.
-
-    Returns
-    -------
-    list
-        Document 목록.
-
-    Notes
-    -----
-    - 목적: load_data 호출을 공통화.
-    - 로직: reader.load_data 호출 결과 반환.
-    - 데이터: 전달된 file_path.
-    """
+    """HWPReader 로드 헬퍼."""
     return reader.load_data(file_path)
 
 
 class TestHWPReaderCompatibility:
+    """HWPReader 호환성 테스트."""
+
     def test_load_data_returns_document(self, sample_hwp_file: Path) -> None:
-        """Document 반환 검증.
+        """HWP 파일 로드 → Document 반환.
 
-        Parameters
-        ----------
-        sample_hwp_file : Path
-            샘플 HWP 파일.
-
-        Notes
-        -----
-        - 목적: HWPReader가 Document 1개를 반환하는지 확인.
-        - 로직: text/metadata 존재 및 메타데이터 값 검사.
-        - 데이터: fixture `sample_hwp_file`.
+        Given: 유효한 HWP 파일
+        When: load_data 호출
+        Then: Document 1개 반환, text/metadata 존재
         """
         reader = HWPReader()
         docs = _load_docs(reader, sample_hwp_file)
@@ -72,18 +46,11 @@ class TestHWPReaderCompatibility:
         assert metadata.get("conversion_pipeline") == "hwp→xhtml→markdown"
 
     def test_load_data_multiple_files(self, all_hwp_files: list[Path]) -> None:
-        """여러 파일 로드 결과 개수 검증.
+        """여러 파일 로드 → 파일 수만큼 Document.
 
-        Parameters
-        ----------
-        all_hwp_files : list[Path]
-            전체 HWP 파일 목록.
-
-        Notes
-        -----
-        - 목적: 파일 수와 문서 수가 일치하는지 확인.
-        - 로직: 각 파일을 load_data로 누적 후 길이 비교.
-        - 데이터: fixture `all_hwp_files`.
+        Given: 여러 HWP 파일
+        When: 각 파일에 load_data 호출
+        Then: 파일 수 == Document 수
         """
         reader = HWPReader()
         docs = []
@@ -98,20 +65,11 @@ class TestHWPReaderCompatibility:
         sample_hwp_file: Path,
         output_format: Literal["txt", "html", "markdown"],
     ) -> None:
-        """output_format별 Document 메타데이터 검증.
+        """output_format 지정 → metadata에 반영.
 
-        Parameters
-        ----------
-        sample_hwp_file : Path
-            샘플 HWP 파일.
-        output_format : {"txt", "html", "markdown"}
-            변환 포맷.
-
-        Notes
-        -----
-        - 목적: 포맷이 메타데이터에 반영되는지 확인.
-        - 로직: doc.metadata["format"] 비교.
-        - 데이터: fixture `sample_hwp_file`, parametrize 값.
+        Given: 유효한 HWP 파일, output_format
+        When: load_data(output_format=...) 호출
+        Then: doc.metadata["format"] == output_format
         """
         reader = HWPReader()
         docs = reader.load_data(sample_hwp_file, output_format=output_format)
@@ -121,18 +79,11 @@ class TestHWPReaderCompatibility:
         assert doc.metadata.get("format") == output_format
 
     def test_load_data_with_extra_info(self, sample_hwp_file: Path) -> None:
-        """extra_info 병합 검증.
+        """extra_info → metadata에 병합.
 
-        Parameters
-        ----------
-        sample_hwp_file : Path
-            샘플 HWP 파일.
-
-        Notes
-        -----
-        - 목적: extra_info가 metadata에 병합되는지 확인.
-        - 로직: extra_info 키가 metadata에 포함되는지 검사.
-        - 데이터: extra_info 딕셔너리.
+        Given: extra_info={"category": "rule"}
+        When: load_data 호출
+        Then: doc.metadata["category"] == "rule"
         """
         reader = HWPReader()
         docs = reader.load_data(sample_hwp_file, extra_info={"category": "rule"})
@@ -141,18 +92,13 @@ class TestHWPReaderCompatibility:
         assert doc.metadata.get("category") == "rule"
 
     def test_load_data_odt_binary(self, sample_hwp_file: Path) -> None:
-        """ODT 변환 시 base64 인코딩 경로 검증.
+        """ODT 변환 → base64 문자열.
 
-        Parameters
-        ----------
-        sample_hwp_file : Path
-            샘플 HWP 파일.
+        Given: output_format="odt"
+        When: load_data 호출
+        Then: doc.text는 문자열, metadata["format"]=="odt"
 
-        Notes
-        -----
-        - 목적: ODT 바이너리 결과가 base64 문자열로 반환되는지 확인.
-        - 로직: 결과 타입과 metadata 포맷 검사.
-        - 데이터: fixture `sample_hwp_file`.
+        바이너리 ODT는 base64로 인코딩되어 반환.
         """
         reader = HWPReader()
         docs = reader.load_data(sample_hwp_file, output_format="odt")
@@ -162,18 +108,11 @@ class TestHWPReaderCompatibility:
         assert doc.metadata.get("format") == "odt"
 
     def test_load_data_large_file(self, all_hwp_files: list[Path]) -> None:
-        """큰 파일 변환 검증.
+        """큰 파일 로드.
 
-        Parameters
-        ----------
-        all_hwp_files : list[Path]
-            전체 HWP 파일 목록.
-
-        Notes
-        -----
-        - 목적: 가장 큰 파일도 정상 변환되는지 확인.
-        - 로직: max(size) 파일을 load_data로 변환.
-        - 데이터: fixture `all_hwp_files`.
+        Given: 가장 큰 HWP 파일
+        When: load_data 호출
+        Then: 정상 변환
         """
         reader = HWPReader()
         large_file = max(all_hwp_files, key=lambda f: f.stat().st_size)
@@ -182,18 +121,11 @@ class TestHWPReaderCompatibility:
         assert isinstance(docs[0].text, str)
 
     def test_load_data_bulk_files(self, small_hwp_files: list[Path]) -> None:
-        """벌크 파일 변환 검증.
+        """벌크 파일 로드.
 
-        Parameters
-        ----------
-        small_hwp_files : list[Path]
-            작은 HWP 파일 목록.
-
-        Notes
-        -----
-        - 목적: 여러 파일 변환 결과 개수 확인.
-        - 로직: 각 파일 load_data 결과를 합산.
-        - 데이터: fixture `small_hwp_files`.
+        Given: 작은 HWP 파일 목록
+        When: 각 파일에 load_data 호출
+        Then: 파일 수만큼 Document 반환
         """
         reader = HWPReader()
         docs = []
@@ -206,16 +138,18 @@ class TestHWPReaderCompatibility:
 
 
 class TestHWPReaderEdgeCases:
+    """HWPReader 에지 케이스 테스트."""
+
     def test_importerror_branch_on_reload(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """llama-index-core ImportError 분기 커버.
+        """llama-index-core ImportError 분기.
 
-        Notes
-        -----
-        - 목적: reader 모듈의 except ImportError 분기 실행.
-        - 로직: import 훅으로 llama_index import 실패 유도 후 reload.
-        - 데이터: 없음.
+        Given: llama_index import 실패하도록 mocking
+        When: reader 모듈 reload
+        Then: LLAMA_INDEX_AVAILABLE=False, Document=None
+
+        선택적 의존성 미설치 시 graceful degradation.
         """
         import hwp_parser.adapters.llama_index.reader as reader_module
 
@@ -237,13 +171,11 @@ class TestHWPReaderEdgeCases:
         importlib.reload(reader_module)
 
     def test_init_requires_llama_index(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """llama-index-core 미설치 경로 검증.
+        """llama-index 미설치 → ImportError.
 
-        Notes
-        -----
-        - 목적: LLAMA_INDEX_AVAILABLE=False 분기 커버.
-        - 로직: 플래그를 False로 패치 후 ImportError 확인.
-        - 데이터: 없음.
+        Given: LLAMA_INDEX_AVAILABLE=False
+        When: HWPReader() 생성
+        Then: ImportError("llama-index-core") 발생
         """
         from hwp_parser.adapters.llama_index import reader as reader_module
 
@@ -252,18 +184,11 @@ class TestHWPReaderEdgeCases:
             reader_module.HWPReader()
 
     def test_load_data_accepts_string_path(self, sample_hwp_file: Path) -> None:
-        """문자열 경로 입력 처리 검증.
+        """문자열 경로 입력 → Path 변환.
 
-        Parameters
-        ----------
-        sample_hwp_file : Path
-            샘플 HWP 파일.
-
-        Notes
-        -----
-        - 목적: Path 변환 분기 커버.
-        - 로직: str 경로로 load_data 호출.
-        - 데이터: fixture `sample_hwp_file`.
+        Given: 문자열 형태의 파일 경로
+        When: load_data 호출
+        Then: 정상 변환
         """
         reader = HWPReader()
         docs = reader.load_data(str(sample_hwp_file))
