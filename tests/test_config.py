@@ -209,28 +209,139 @@ class TestConfigHelpers:
             result = _get_list("TEST_LIST", ["default"])
             assert result == ["default"]
 
-    def test_load_dotenv_calls_parser(self, monkeypatch) -> None:
-        """.env 파일 존재 → 파서 호출.
 
-        Given: .env 파일이 존재하는 상황 (mocked)
-        When: _load_dotenv() 호출
-        Then: _parse_env_file 함수 호출됨
+class TestLoadDotenv:
+    """_load_dotenv 테스트 (임시 파일 기반).
+
+    테스트 전략:
+        1. tmp_path에 실제 디렉터리 구조와 .env 파일 생성
+        2. cfg.__file__을 tmp_path 내 경로로 변경 (탐색 시작점 조작)
+        3. _load_dotenv() 실행 후 환경변수가 실제로 설정되었는지 확인
+
+    이 방식의 장점:
+        - 실제 파일 I/O를 테스트하므로 더 현실적
+        - 복잡한 모킹 없이 _load_dotenv의 전체 흐름 검증 가능
+
+    _load_dotenv() 동작 원리:
+        1. Path(__file__).resolve().parents 를 순회하며
+        2. 각 디렉터리에서 .env 파일이 존재하는지 확인
+        3. 존재하면 _parse_env_file()을 호출하여 환경변수 로드
+        4. pyproject.toml을 발견하면 프로젝트 루트로 인식하고 탐색 중단
+    """
+
+    def test_load_dotenv_loads_env_file(self, tmp_path, monkeypatch) -> None:
+        """.env 파일 존재 → 환경변수 로드.
+
+        Given: tmp_path에 .env 파일 존재 (TEST_VAR=hello)
+        When: _load_dotenv() 호출 (탐색 시작점을 tmp_path로 변경)
+        Then: 환경변수 TEST_VAR=hello가 설정됨
+
+        테스트 구조::
+
+            tmp_path/
+            └── .env  (TEST_LOAD_DOTENV_VAR=hello)
+
+        왜 __file__을 변경하는가?
+            _load_dotenv()는 Path(__file__).resolve().parents를 순회하므로,
+            __file__을 tmp_path 내 파일로 변경하면 tmp_path/.env를 찾게 됨.
         """
         from hwp_parser.adapters.api import config as cfg
 
-        called: dict[str, bool] = {"called": False}
+        env_file = tmp_path / ".env"
+        env_file.write_text("TEST_LOAD_DOTENV_VAR=hello\n", encoding="utf-8")
 
-        def _fake_parse(_path):
-            called["called"] = True
+        fake_config_path = tmp_path / "config.py"
+        monkeypatch.setattr(cfg, "__file__", str(fake_config_path))
 
-        def _fake_exists(self) -> bool:
-            return self.name == ".env"
+        with mock.patch.dict(os.environ, {}, clear=True):
+            cfg._load_dotenv()
+            assert os.environ.get("TEST_LOAD_DOTENV_VAR") == "hello"
 
-        monkeypatch.setattr(cfg, "_parse_env_file", _fake_parse)
-        monkeypatch.setattr(Path, "exists", _fake_exists, raising=False)
+    def test_load_dotenv_skips_when_no_env(self, tmp_path, monkeypatch) -> None:
+        """.env 미존재 → 환경변수 변경 없음.
 
-        cfg._load_dotenv()
-        assert called["called"] is True
+        Given: tmp_path에 .env 파일 없음, pyproject.toml만 존재
+        When: _load_dotenv() 호출
+        Then: 환경변수 변경 없음, 에러 없이 종료
+
+        테스트 구조::
+
+            tmp_path/
+            ├── pyproject.toml  (탐색 중단점 역할)
+            └── src/
+                └── config.py  (가상 시작점)
+
+        pyproject.toml이 있으면 프로젝트 루트로 인식하고 탐색 중단.
+        .env가 없으므로 환경변수는 변경되지 않음.
+        """
+        from hwp_parser.adapters.api import config as cfg
+
+        (tmp_path / "pyproject.toml").touch()
+
+        subdir = tmp_path / "src"
+        subdir.mkdir()
+        fake_config_path = subdir / "config.py"
+        monkeypatch.setattr(cfg, "__file__", str(fake_config_path))
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            cfg._load_dotenv()
+            assert "TEST_LOAD_DOTENV_VAR" not in os.environ
+
+    def test_load_dotenv_finds_env_at_project_root(self, tmp_path, monkeypatch) -> None:
+        """pyproject.toml 옆의 .env 발견 → 환경변수 로드.
+
+        Given: tmp_path에 pyproject.toml과 .env 모두 존재
+               하위 디렉터리(src/)에서 탐색 시작
+        When: _load_dotenv() 호출
+        Then: 상위의 .env가 로드됨
+
+        테스트 구조::
+
+            tmp_path/
+            ├── pyproject.toml
+            ├── .env  (PROJECT_ROOT_VAR=found)
+            └── src/
+                └── config.py  (가상 시작점)
+
+        src/config.py 위치에서 시작하여 상위로 탐색하면
+        tmp_path/.env를 발견하고 환경변수를 로드해야 함.
+        """
+        from hwp_parser.adapters.api import config as cfg
+
+        (tmp_path / "pyproject.toml").touch()
+        (tmp_path / ".env").write_text("PROJECT_ROOT_VAR=found\n", encoding="utf-8")
+
+        src_dir = tmp_path / "src"
+        src_dir.mkdir()
+        fake_config_path = src_dir / "config.py"
+        monkeypatch.setattr(cfg, "__file__", str(fake_config_path))
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            cfg._load_dotenv()
+            assert os.environ.get("PROJECT_ROOT_VAR") == "found"
+
+    def test_load_dotenv_no_parents(self, tmp_path, monkeypatch) -> None:
+        """parents 비어있음 → 루프 미진입 (Line 18→exit 커버).
+
+        Given: Path(__file__).resolve().parents가 빈 리스트
+        When: _load_dotenv() 호출
+        Then: for 루프 미진입, 에러 없이 종료
+
+        이 테스트는 config.py Line 18 분기를 커버:
+            for parent in current.parents:  # ← parents=[]이면 루프 skip
+
+        루트 디렉터리 등 부모가 없는 특수 케이스 처리 검증.
+        """
+        from hwp_parser.adapters.api import config as cfg
+
+        class _FakePath:
+            """parents가 빈 리스트인 가짜 Path 객체."""
+
+            parents: list[Path] = []
+
+        monkeypatch.setattr(Path, "resolve", lambda self: _FakePath())
+
+        cfg._load_dotenv()  # 에러 없이 종료되어야 함
 
     def test_parse_env_file(self, tmp_path) -> None:
         """.env 파일 파싱 → 환경변수 설정.
@@ -296,85 +407,6 @@ class TestConfigHelpers:
         with mock.patch.dict(os.environ, {"TEST_ENV_EXISTING": "original"}, clear=True):
             _parse_env_file(env_file)
             assert os.environ["TEST_ENV_EXISTING"] == "original"
-
-    def test_load_dotenv_skips_when_no_env(self, monkeypatch) -> None:
-        """.env 미존재 + pyproject.toml 발견 → 탐색 중단.
-
-        Given: .env 없음, pyproject.toml 존재
-        When: _load_dotenv() 호출
-        Then: 파서 미호출, 루프 종료
-
-        프로젝트 루트 감지 시 상위 디렉터리 탐색 중단.
-        """
-        from hwp_parser.adapters.api import config as cfg
-
-        called: dict[str, bool] = {"called": False}
-
-        def _fake_parse(_path):
-            called["called"] = True
-
-        def _fake_exists(self) -> bool:
-            if self.name == ".env":
-                return False
-            if self.name == "pyproject.toml":
-                return True
-            return False
-
-        monkeypatch.setattr(cfg, "_parse_env_file", _fake_parse)
-        monkeypatch.setattr(Path, "exists", _fake_exists, raising=False)
-
-        cfg._load_dotenv()
-        assert called["called"] is False
-
-    def test_load_dotenv_env_found_in_pyproject_branch(self, monkeypatch) -> None:
-        """pyproject.toml 디렉터리에서 .env 발견 → 파서 호출.
-
-        Given: 첫 번째 .env 체크 False, pyproject.toml True,
-               이후 .env 체크 True
-        When: _load_dotenv() 호출
-        Then: 파서 호출됨
-
-        pyproject.toml 옆의 .env 파일도 탐지.
-        """
-        from hwp_parser.adapters.api import config as cfg
-
-        called: dict[str, bool] = {"called": False}
-        counter = {"env_calls": 0}
-
-        def _fake_parse(_path):
-            called["called"] = True
-
-        def _fake_exists(self) -> bool:
-            if self.name == ".env":
-                counter["env_calls"] += 1
-                return counter["env_calls"] > 1
-            if self.name == "pyproject.toml":
-                return True
-            return False
-
-        monkeypatch.setattr(cfg, "_parse_env_file", _fake_parse)
-        monkeypatch.setattr(Path, "exists", _fake_exists, raising=False)
-
-        cfg._load_dotenv()
-        assert called["called"] is True
-
-    def test_load_dotenv_no_parents(self, monkeypatch) -> None:
-        """parents 비어있음 → 루프 미진입.
-
-        Given: Path.resolve()가 parents=[]인 객체 반환
-        When: _load_dotenv() 호출
-        Then: for-loop 미진입, 정상 종료
-
-        루트 디렉터리 등 특수 케이스 처리.
-        """
-        from hwp_parser.adapters.api import config as cfg
-
-        class _DummyPath:
-            parents: list[Path] = []
-
-        monkeypatch.setattr(Path, "resolve", lambda self: _DummyPath())
-
-        cfg._load_dotenv()
 
 
 # === 타입 검사 테스트 ===
