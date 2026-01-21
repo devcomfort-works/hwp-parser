@@ -56,6 +56,8 @@ _load_dotenv()
 
 def _get_int(key: str, default: int) -> int:
     """환경변수에서 정수 값 가져오기"""
+    if not isinstance(default, int):
+        raise TypeError(f"default must be int, got {type(default).__name__}")
     value = os.environ.get(key)
     if value is None:
         return default
@@ -67,22 +69,28 @@ def _get_int(key: str, default: int) -> int:
 
 def _get_float(key: str, default: float) -> float:
     """환경변수에서 실수 값 가져오기"""
+    if not isinstance(default, (int, float)):
+        raise TypeError(f"default must be float, got {type(default).__name__}")
     value = os.environ.get(key)
     if value is None:
-        return default
+        return float(default)
     try:
         return float(value)
     except ValueError:
-        return default
+        return float(default)
 
 
 def _get_str(key: str, default: str) -> str:
     """환경변수에서 문자열 값 가져오기"""
+    if not isinstance(default, str):
+        raise TypeError(f"default must be str, got {type(default).__name__}")
     return os.environ.get(key, default)
 
 
 def _get_bool(key: str, default: bool) -> bool:
     """환경변수에서 불리언 값 가져오기"""
+    if not isinstance(default, bool):
+        raise TypeError(f"default must be bool, got {type(default).__name__}")
     value = os.environ.get(key)
     if value is None:
         return default
@@ -91,6 +99,8 @@ def _get_bool(key: str, default: bool) -> bool:
 
 def _get_list(key: str, default: list[str]) -> list[str]:
     """환경변수에서 콤마로 구분된 리스트 가져오기"""
+    if not isinstance(default, list):
+        raise TypeError(f"default must be list, got {type(default).__name__}")
     value = os.environ.get(key)
     if value is None:
         return default

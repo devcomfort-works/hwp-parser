@@ -375,3 +375,141 @@ class TestConfigHelpers:
         monkeypatch.setattr(Path, "resolve", lambda self: _DummyPath())
 
         cfg._load_dotenv()
+
+
+# === 타입 검사 테스트 ===
+class TestConfigTypeValidation:
+    """설정 헬퍼 타입 검사 테스트 (fail-fast)."""
+
+    def test_get_int_rejects_float_default(self) -> None:
+        """_get_int에 float 기본값 → TypeError.
+
+        Given: _get_int 호출 시 float 기본값 전달
+        When: _get_int("KEY", 3.14) 호출
+        Then: TypeError 발생
+
+        타입 불일치를 조기에 감지하여 버그 방지.
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_int
+
+        with pytest.raises(TypeError, match="default must be int"):
+            _get_int("__TEST__", 3.14)  # type: ignore[arg-type]
+
+    def test_get_int_rejects_str_default(self) -> None:
+        """_get_int에 str 기본값 → TypeError.
+
+        Given: _get_int 호출 시 str 기본값 전달
+        When: _get_int("KEY", "42") 호출
+        Then: TypeError 발생
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_int
+
+        with pytest.raises(TypeError, match="default must be int"):
+            _get_int("__TEST__", "42")  # type: ignore[arg-type]
+
+    def test_get_float_rejects_str_default(self) -> None:
+        """_get_float에 str 기본값 → TypeError.
+
+        Given: _get_float 호출 시 str 기본값 전달
+        When: _get_float("KEY", "3.14") 호출
+        Then: TypeError 발생
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_float
+
+        with pytest.raises(TypeError, match="default must be float"):
+            _get_float("__TEST__", "3.14")  # type: ignore[arg-type]
+
+    def test_get_float_accepts_int_default(self) -> None:
+        """_get_float에 int 기본값 → 허용 (float로 변환).
+
+        Given: _get_float 호출 시 int 기본값 전달
+        When: _get_float("KEY", 42) 호출
+        Then: 42.0 반환 (int → float 변환)
+
+        Python에서 int는 float의 subset으로 간주.
+        """
+        from hwp_parser.adapters.api.config import _get_float
+
+        result = _get_float("__NONEXISTENT__", 42)
+        assert result == 42.0
+        assert isinstance(result, float)
+
+    def test_get_str_rejects_int_default(self) -> None:
+        """_get_str에 int 기본값 → TypeError.
+
+        Given: _get_str 호출 시 int 기본값 전달
+        When: _get_str("KEY", 42) 호출
+        Then: TypeError 발생
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_str
+
+        with pytest.raises(TypeError, match="default must be str"):
+            _get_str("__TEST__", 42)  # type: ignore[arg-type]
+
+    def test_get_bool_rejects_int_default(self) -> None:
+        """_get_bool에 int 기본값 → TypeError.
+
+        Given: _get_bool 호출 시 int 기본값 전달 (1 또는 0)
+        When: _get_bool("KEY", 1) 호출
+        Then: TypeError 발생
+
+        Python에서 bool은 int의 subclass이지만, 명시적 bool 요구.
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_bool
+
+        with pytest.raises(TypeError, match="default must be bool"):
+            _get_bool("__TEST__", 1)  # type: ignore[arg-type]
+
+    def test_get_bool_rejects_str_default(self) -> None:
+        """_get_bool에 str 기본값 → TypeError.
+
+        Given: _get_bool 호출 시 str 기본값 전달
+        When: _get_bool("KEY", "true") 호출
+        Then: TypeError 발생
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_bool
+
+        with pytest.raises(TypeError, match="default must be bool"):
+            _get_bool("__TEST__", "true")  # type: ignore[arg-type]
+
+    def test_get_list_rejects_str_default(self) -> None:
+        """_get_list에 str 기본값 → TypeError.
+
+        Given: _get_list 호출 시 str 기본값 전달
+        When: _get_list("KEY", "a,b,c") 호출
+        Then: TypeError 발생
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_list
+
+        with pytest.raises(TypeError, match="default must be list"):
+            _get_list("__TEST__", "a,b,c")  # type: ignore[arg-type]
+
+    def test_get_list_rejects_tuple_default(self) -> None:
+        """_get_list에 tuple 기본값 → TypeError.
+
+        Given: _get_list 호출 시 tuple 기본값 전달
+        When: _get_list("KEY", ("a", "b")) 호출
+        Then: TypeError 발생
+
+        tuple과 list는 다른 타입으로 엄격히 구분.
+        """
+        import pytest
+
+        from hwp_parser.adapters.api.config import _get_list
+
+        with pytest.raises(TypeError, match="default must be list"):
+            _get_list("__TEST__", ("a", "b"))  # type: ignore[arg-type]
