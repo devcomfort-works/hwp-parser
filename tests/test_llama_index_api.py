@@ -161,6 +161,46 @@ class TestHWPReaderCompatibility:
         assert isinstance(doc.text, str)
         assert doc.metadata.get("format") == "odt"
 
+    def test_load_data_large_file(self, all_hwp_files: list[Path]) -> None:
+        """큰 파일 변환 검증.
+
+        Parameters
+        ----------
+        all_hwp_files : list[Path]
+            전체 HWP 파일 목록.
+
+        Notes
+        -----
+        - 목적: 가장 큰 파일도 정상 변환되는지 확인.
+        - 로직: max(size) 파일을 load_data로 변환.
+        - 데이터: fixture `all_hwp_files`.
+        """
+        reader = HWPReader()
+        large_file = max(all_hwp_files, key=lambda f: f.stat().st_size)
+        docs = reader.load_data(large_file)
+        assert len(docs) == 1
+        assert isinstance(docs[0].text, str)
+
+    def test_load_data_bulk_files(self, small_hwp_files: list[Path]) -> None:
+        """벌크 파일 변환 검증.
+
+        Parameters
+        ----------
+        small_hwp_files : list[Path]
+            작은 HWP 파일 목록.
+
+        Notes
+        -----
+        - 목적: 여러 파일 변환 결과 개수 확인.
+        - 로직: 각 파일 load_data 결과를 합산.
+        - 데이터: fixture `small_hwp_files`.
+        """
+        reader = HWPReader()
+        docs = []
+        for file_path in small_hwp_files:
+            docs.extend(reader.load_data(file_path))
+        assert len(docs) == len(small_hwp_files)
+
 
 # === 에지 케이스 ===
 

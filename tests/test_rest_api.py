@@ -343,6 +343,51 @@ class TestServiceConversion:
         response = service.convert(sample_hwp_file, output_format="html")
         assert response.output_format == "html"
 
+    def test_convert_large_file(
+        self, service: ServiceInstance, all_hwp_files: list[Path]
+    ) -> None:
+        """큰 파일 변환 검증.
+
+        Parameters
+        ----------
+        service : ServiceInstance
+            HWPService fixture.
+        all_hwp_files : list[Path]
+            전체 HWP 파일 목록.
+
+        Notes
+        -----
+        - 목적: 가장 큰 파일 변환 결과 확인.
+        - 로직: max(size) 파일을 convert_to_markdown로 변환.
+        - 데이터: fixture `all_hwp_files`.
+        """
+        large_file = max(all_hwp_files, key=lambda f: f.stat().st_size)
+        response = service.convert_to_markdown(large_file)
+        assert response.output_format == "markdown"
+        assert response.is_binary is False
+
+    def test_convert_bulk_files(
+        self, service: ServiceInstance, small_hwp_files: list[Path]
+    ) -> None:
+        """벌크 파일 변환 검증.
+
+        Parameters
+        ----------
+        service : ServiceInstance
+            HWPService fixture.
+        small_hwp_files : list[Path]
+            작은 HWP 파일 목록.
+
+        Notes
+        -----
+        - 목적: 여러 파일 변환 결과 개수 확인.
+        - 로직: 각 파일을 convert_to_text로 변환.
+        - 데이터: fixture `small_hwp_files`.
+        """
+        results = [service.convert_to_text(f) for f in small_hwp_files]
+        assert len(results) == len(small_hwp_files)
+        assert all(r.output_format == "txt" for r in results)
+
 
 # === 에지 케이스 ===
 

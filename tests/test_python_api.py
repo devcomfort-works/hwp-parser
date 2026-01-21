@@ -445,6 +445,29 @@ class TestConversionResult:
 class TestMultipleFiles:
     """여러 파일 변환 테스트"""
 
+    def test_convert_large_file_to_markdown(
+        self, converter: HWPConverter, all_hwp_files: list[Path]
+    ) -> None:
+        """큰 파일 마크다운 변환 검증.
+
+        Parameters
+        ----------
+        converter : HWPConverter
+            변환기 fixture.
+        all_hwp_files : list[Path]
+            전체 HWP 파일 목록.
+
+        Notes
+        -----
+        - 목적: 큰 파일 변환 결과 확인.
+        - 로직: 가장 큰 파일을 선택 후 변환.
+        - 데이터: fixture `all_hwp_files`.
+        """
+        large_file = max(all_hwp_files, key=lambda f: f.stat().st_size)
+        result = converter.to_markdown(large_file)
+        assert result.output_format == "markdown"
+        assert len(result.content) > 0
+
     def test_convert_multiple_files_to_text(
         self, converter: HWPConverter, small_hwp_files: list[Path]
     ) -> None:
