@@ -90,7 +90,7 @@ h11==0.16.0
     # via httpcore
     # via uvicorn
     # via wsproto
-html-to-markdown==2.22.0
+html-to-markdown==2.23.1
     # via hwp-parser
 html2text==2025.4.15
     # via hwp-parser

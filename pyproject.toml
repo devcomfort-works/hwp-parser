@@ -21,8 +21,8 @@ classifiers = [
 
 dependencies = [
     "pyhwp>=0.1b15",
-    "html2text>=2024.2.26",
-    "html-to-markdown>=1.0.0",
+    "html2text>=2025.4.15",
+    "html-to-markdown>=2.23.1",
     "llama-index-core>=0.14.12",
     "bentoml>=1.4.33",
     "pydantic>=2.12.5",
@@ -34,7 +34,7 @@ llama-index = [
     "llama-index-core>=0.10.0",
 ]
 bentoml = [
-    "bentoml>=1.2.0",
+    "bentoml>=1.4.33",
     "pydantic>=2.0.0",
 ]
 all = [
@@ -51,6 +51,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
+# BentoML 서비스 실행 CLI
 hwp-serve = "hwp_parser.adapters.api:serve"
 
 [tool.rye]
@@ -66,14 +67,25 @@ dev-dependencies = [
 ]
 
 [tool.rye.scripts]
+# 로컬 API 서버 실행
 serve = "bentoml serve hwp_parser.adapters.api:HWPService"
-test = "pytest tests/ -v --ignore=tests/test_benchmark.py"
-test-cov = "pytest tests/ -v --cov=hwp_parser --cov-report=term-missing --ignore=tests/test_benchmark.py"
-test-cov-html = "pytest tests/ -v --cov=hwp_parser --cov-report=term-missing --cov-report=html --ignore=tests/test_benchmark.py"
-test-fast = "pytest tests/ -v -x --ignore=tests/test_benchmark.py"
-test-all = "pytest tests/ -v"
-benchmark = "pytest tests/test_benchmark.py -v --benchmark-verbose"
+# 기본 테스트(병렬)
+test = "pytest tests/ -v -n auto --dist=loadscope"
+# 커버리지 측정(병렬, 터미널 리포트)
+test-cov = "pytest tests/ -v -n auto --dist=loadscope --cov=hwp_parser --cov-report=term-missing"
+# 커버리지 측정(병렬, 터미널+HTML 리포트)
+test-cov-html = "pytest tests/ -v -n auto --dist=loadscope --cov=hwp_parser --cov-report=term-missing --cov-report=html"
+# 벤치마크 실행(성능 측정)
+benchmark = "pytest tests/benchmarks.py -v --benchmark-verbose"
+# 커버리지 실행 + 리포트 + HTML 생성
+cov = "coverage run -m pytest tests/ -v -n auto --dist=loadscope && coverage report -m && coverage html"
+# 커버리지 터미널 리포트만 생성
+cov-report = "coverage report -m"
+# 커버리지 HTML 리포트만 생성
+cov-html = "coverage html"
+# 문서 로컬 서버
 docs = "zensical serve"
+# 문서 빌드
 docs-build = "zensical build"
 
 [tool.pytest.ini_options]
