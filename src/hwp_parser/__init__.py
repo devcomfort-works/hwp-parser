@@ -27,7 +27,13 @@ Usage:
     serve()  # 또는 bentoml serve hwp_parser:HWPService
 """
 
-from hwp_parser.core import HWPConverter, ConversionResult
+from typing import TYPE_CHECKING
+
+from hwp_parser.core import ConversionResult, HWPConverter
+
+if TYPE_CHECKING:
+    from hwp_parser.adapters.api import HWPService, serve
+    from hwp_parser.adapters.llama_index import HWPReader
 
 __version__ = "0.1.0"
 
