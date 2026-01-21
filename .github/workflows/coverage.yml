@@ -54,7 +54,7 @@ jobs:
         run: |
           mkdir -p .github/badges
           rye run coverage xml
-          rye run coverage-badge -o .github/badges/coverage.svg -f
+          coverage-badge -o .github/badges/coverage.svg -f
 
       - name: Commit coverage badge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
