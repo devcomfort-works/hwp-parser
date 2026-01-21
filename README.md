@@ -22,10 +22,23 @@ rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 > 📦 **PyPI 배포 예정**: 추후 PyPI에 `hwp-parser`라는 이름으로 배포될 예정입니다.
 
 ```python
+# 1. 기본 변환 (Python API)
 from hwp_parser import HWPConverter
 
 result = HWPConverter().to_markdown("document.hwp")
 print(result.content)
+
+# 2. RAG 파이프라인 (LlamaIndex)
+from hwp_parser import HWPReader
+from llama_index.core import VectorStoreIndex
+
+documents = HWPReader().load_data("document.hwp")
+index = VectorStoreIndex.from_documents(documents)
+```
+
+```bash
+# 3. API 서버 실행 (BentoML)
+bentoml serve hwp_parser:HWPService
 ```
 
 ## 주요 기능
