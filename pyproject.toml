@@ -98,6 +98,12 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "benchmark: marks tests as benchmark tests",
 ]
+filterwarnings = [
+    # pytest-benchmark + xdist 충돌 경고 무시
+    "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
+    # BentoML의 Pydantic deprecation 경고 무시 (외부 라이브러리)
+    "ignore:The `__get_pydantic_core_schema__` method:pydantic.warnings.PydanticDeprecatedSince211",
+]
 
 [tool.coverage.run]
 source = ["src/hwp_parser"]
