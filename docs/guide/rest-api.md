@@ -277,7 +277,7 @@ async function convertHwp(file, outputFormat = "markdown") {
     {
       method: "POST",
       body: formData,
-    }
+    },
   );
 
   if (!response.ok) {
