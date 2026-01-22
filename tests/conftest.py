@@ -27,6 +27,12 @@ def sample_hwp_file() -> Path:
 
 
 @pytest.fixture
+def hwp_file_with_bindata() -> Path:
+    """bindata(이미지)가 포함된 HWP 파일"""
+    return FIXTURES_DIR / "_4_문서정보구분[대외문서_협조문_내부기안_보안문서]_ori.hwp"
+
+
+@pytest.fixture
 def all_hwp_files() -> list[Path]:
     """모든 HWP fixture 파일"""
     return list(FIXTURES_DIR.glob("*.hwp"))

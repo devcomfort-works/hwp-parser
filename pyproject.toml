@@ -24,22 +24,21 @@ dependencies = [
     "html2text>=2025.4.15",
     "html-to-markdown>=2.23.1",
     "llama-index-core>=0.14.12",
-    "bentoml>=1.4.33",
-    "pydantic>=2.12.5",
+    "click>=8.3.1",
+    "gradio>=6.3.0",
     "loguru>=0.7.3",
 ]
+
+[project.scripts]
+# CLI 변환 도구 (hwp-parser convert *.hwp)
+hwp-parser = "hwp_parser.cli.app:main"
 
 [project.optional-dependencies]
 llama-index = [
     "llama-index-core>=0.10.0",
 ]
-bentoml = [
-    "bentoml>=1.4.33",
-    "pydantic>=2.0.0",
-]
 all = [
     "hwp-parser[llama-index]",
-    "hwp-parser[bentoml]",
 ]
 dev = [
     "pytest>=8.0.0",
@@ -49,10 +48,6 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[project.scripts]
-# BentoML 서비스 실행 CLI
-hwp-serve = "hwp_parser.adapters.api:serve"
 
 [tool.rye]
 managed = true
@@ -67,22 +62,29 @@ dev-dependencies = [
 ]
 
 [tool.rye.scripts]
-# 로컬 API 서버 실행
-serve = "bentoml serve hwp_parser.adapters.api:HWPService"
-# 기본 테스트(병렬)
+# ===== 서버 실행 =====
+# Web UI 서버 (Gradio, http://localhost:7860)
+web = "python web/app.py"
+
+# ===== 테스트 =====
+# 기본 테스트 (병렬)
 test = "pytest tests/ -v -n auto --dist=loadscope"
-# 커버리지 측정(병렬, 터미널 리포트)
+# 커버리지 측정 (병렬, 터미널 리포트)
 test-cov = "pytest tests/ -v -n auto --dist=loadscope --cov=hwp_parser --cov-report=term-missing"
-# 커버리지 측정(병렬, 터미널+HTML 리포트)
+# 커버리지 측정 (병렬, 터미널+HTML 리포트)
 test-cov-html = "pytest tests/ -v -n auto --dist=loadscope --cov=hwp_parser --cov-report=term-missing --cov-report=html"
-# 벤치마크 실행(성능 측정)
+# 벤치마크 실행 (성능 측정)
 benchmark = "pytest tests/benchmarks.py -v --benchmark-verbose"
+
+# ===== 커버리지 =====
 # 커버리지 실행 + 리포트 + HTML 생성
 cov = "coverage run -m pytest tests/ -v -n auto --dist=loadscope && coverage report -m && coverage html"
 # 커버리지 터미널 리포트만 생성
 cov-report = "coverage report -m"
 # 커버리지 HTML 리포트만 생성
 cov-html = "coverage html"
+
+# ===== 문서 =====
 # 문서 로컬 서버
 docs = "zensical serve"
 # 문서 빌드
@@ -99,10 +101,10 @@ markers = [
     "benchmark: marks tests as benchmark tests",
 ]
 filterwarnings = [
-    # pytest-benchmark + xdist 충돌 경고 무시
+    # pytest-benchmark + xdist 병렬 실행 시 벤치마크 비활성화 안내 (정보성 경고)
     "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
-    # BentoML의 Pydantic deprecation 경고 무시 (외부 라이브러리)
-    "ignore:The `__get_pydantic_core_schema__` method:pydantic.warnings.PydanticDeprecatedSince211",
+    # pyhwp 내부 pkg_resources 사용 경고 (외부 라이브러리, 제어 불가)
+    "ignore:pkg_resources is deprecated:UserWarning",
 ]
 
 [tool.coverage.run]
@@ -115,6 +117,9 @@ exclude_lines = [
     "def __repr__",
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
+]
+exclude_also = [
+    "while True:",  # 무한 루프는 false 분기가 없음
 ]
 
 [tool.hatch.metadata]
@@ -130,3 +135,9 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = ["E501"]
+
+[tool.pyright]
+# pyhwp 타입 스텁 경로 (hwp5 모듈)
+stubPath = "src/stubs"
+# 기본 타입 체크 모드
+typeCheckingMode = "basic"

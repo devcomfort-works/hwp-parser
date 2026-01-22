@@ -259,7 +259,10 @@ def _post_hwp(url: str, file_path: Path) -> dict:
 def _rest_api_available(api_url: str) -> bool:
     health_url = api_url.replace("/convert/markdown", "/health")
     try:
-        with urlopen(health_url, timeout=2) as response:
+        # BentoML API는 기본적으로 POST 메서드를 사용합니다.
+        # GET 요청 시 405 Method Not Allowed가 발생할 수 있습니다.
+        req = Request(health_url, method="POST")
+        with urlopen(req, timeout=2) as response:
             return response.status == 200
     except URLError:
         return False

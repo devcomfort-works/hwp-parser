@@ -10,40 +10,32 @@
 #   universal: false
 
 -e file:.
-a2wsgi==1.10.10
-    # via bentoml
+aiofiles==24.1.0
+    # via gradio
 aiohappyeyeballs==2.6.1
     # via aiohttp
 aiohttp==3.10.11
-    # via aiohttp-asgi-connector
-    # via bentoml
     # via llama-index-core
-aiohttp-asgi-connector==1.1.2
-    # via bentoml
 aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
-    # via bentoml
     # via llama-index-core
+annotated-doc==0.0.4
+    # via fastapi
 annotated-types==0.7.0
     # via pydantic
 anyio==4.12.1
+    # via gradio
     # via httpx
-    # via httpx-ws
     # via starlette
-    # via watchfiles
-asgiref==3.11.0
-    # via opentelemetry-instrumentation-asgi
 attrs==25.4.0
     # via aiohttp
-    # via bentoml
-    # via cattrs
+audioop-lts==0.2.2
+    # via gradio
 banks==2.2.0
     # via llama-index-core
-bentoml==1.4.33
-    # via hwp-parser
-cattrs==23.1.2
-    # via bentoml
+brotli==1.2.0
+    # via gradio
 certifi==2026.1.4
     # via httpcore
     # via httpx
@@ -53,16 +45,12 @@ cffi==2.0.0
 charset-normalizer==3.4.4
     # via requests
 click==8.3.1
-    # via bentoml
-    # via click-option-group
+    # via hwp-parser
     # via nltk
-    # via rich-toolkit
+    # via typer
+    # via typer-slim
     # via uvicorn
     # via zensical
-click-option-group==0.5.9
-    # via bentoml
-cloudpickle==3.1.2
-    # via bentoml
 colorama==0.4.6
     # via griffe
 coverage==7.13.1
@@ -81,51 +69,63 @@ dirtyjson==1.0.8
     # via llama-index-core
 execnet==2.1.2
     # via pytest-xdist
+fastapi==0.128.0
+    # via gradio
+ffmpy==1.0.0
+    # via gradio
+filelock==3.20.3
+    # via huggingface-hub
 filetype==1.2.0
     # via llama-index-core
 frozenlist==1.8.0
     # via aiohttp
     # via aiosignal
 fsspec==2026.1.0
-    # via bentoml
+    # via gradio-client
+    # via huggingface-hub
     # via llama-index-core
+gradio==6.3.0
+    # via hwp-parser
+gradio-client==2.0.3
+    # via gradio
 greenlet==3.3.0
     # via sqlalchemy
 griffe==1.15.0
     # via banks
+groovy==0.1.2
+    # via gradio
 h11==0.16.0
     # via httpcore
     # via uvicorn
-    # via wsproto
+hf-xet==1.2.0
+    # via huggingface-hub
 html-to-markdown==2.23.1
     # via hwp-parser
 html2text==2025.4.15
     # via hwp-parser
 httpcore==1.0.9
     # via httpx
-    # via httpx-ws
 httpx==0.28.1
-    # via bentoml
-    # via httpx-ws
+    # via gradio
+    # via gradio-client
+    # via huggingface-hub
     # via llama-index-core
-httpx-ws==0.8.2
-    # via bentoml
+    # via safehttpx
+huggingface-hub==1.3.2
+    # via gradio
+    # via gradio-client
 idna==3.11
     # via anyio
     # via httpx
     # via requests
     # via yarl
-importlib-metadata==8.7.1
-    # via opentelemetry-api
 iniconfig==2.3.0
     # via pytest
 jinja2==3.1.6
     # via banks
-    # via bentoml
+    # via gradio
 joblib==1.5.3
     # via nltk
-kantoku==0.18.3
-    # via bentoml
 llama-index-core==0.14.12
     # via hwp-parser
 llama-index-instrumentation==0.4.2
@@ -142,6 +142,7 @@ markdown==3.10
 markdown-it-py==4.0.0
     # via rich
 markupsafe==3.0.3
+    # via gradio
     # via jinja2
 marshmallow==3.26.2
     # via dataclasses-json
@@ -159,77 +160,47 @@ networkx==3.6.1
 nltk==3.9.2
     # via llama-index-core
 numpy==2.4.1
-    # via bentoml
+    # via gradio
     # via llama-index-core
-nvidia-ml-py==13.590.44
-    # via bentoml
+    # via pandas
 olefile==0.47
     # via pyhwp
-opentelemetry-api==1.39.1
-    # via bentoml
-    # via opentelemetry-instrumentation
-    # via opentelemetry-instrumentation-aiohttp-client
-    # via opentelemetry-instrumentation-asgi
-    # via opentelemetry-sdk
-    # via opentelemetry-semantic-conventions
-opentelemetry-instrumentation==0.60b1
-    # via bentoml
-    # via opentelemetry-instrumentation-aiohttp-client
-    # via opentelemetry-instrumentation-asgi
-opentelemetry-instrumentation-aiohttp-client==0.60b1
-    # via bentoml
-opentelemetry-instrumentation-asgi==0.60b1
-    # via bentoml
-opentelemetry-sdk==1.39.1
-    # via bentoml
-opentelemetry-semantic-conventions==0.60b1
-    # via bentoml
-    # via opentelemetry-instrumentation
-    # via opentelemetry-instrumentation-aiohttp-client
-    # via opentelemetry-instrumentation-asgi
-    # via opentelemetry-sdk
-opentelemetry-util-http==0.60b1
-    # via bentoml
-    # via opentelemetry-instrumentation-aiohttp-client
-    # via opentelemetry-instrumentation-asgi
+orjson==3.11.5
+    # via gradio
 packaging==25.0
-    # via bentoml
+    # via gradio
+    # via gradio-client
+    # via huggingface-hub
     # via marshmallow
-    # via opentelemetry-instrumentation
-    # via pip-requirements-parser
     # via pytest
-pathspec==0.11.2
-    # via bentoml
+pandas==2.3.3
+    # via gradio
 pillow==12.1.0
+    # via gradio
     # via llama-index-core
-pip-requirements-parser==32.0.1
-    # via bentoml
 platformdirs==4.5.1
     # via banks
     # via llama-index-core
 pluggy==1.6.0
     # via pytest
     # via pytest-cov
-prometheus-client==0.24.0
-    # via bentoml
 propcache==0.4.1
     # via yarl
-psutil==7.2.1
-    # via bentoml
-    # via kantoku
 py-cpuinfo==9.0.0
     # via pytest-benchmark
 pycparser==2.23
     # via cffi
 pydantic==2.12.5
     # via banks
-    # via bentoml
-    # via hwp-parser
+    # via fastapi
+    # via gradio
     # via llama-index-core
     # via llama-index-instrumentation
     # via llama-index-workflows
 pydantic-core==2.41.5
     # via pydantic
+pydub==0.25.1
+    # via gradio
 pygments==2.19.2
     # via pytest
     # via rich
@@ -238,8 +209,6 @@ pyhwp==0.1b15
     # via hwp-parser
 pymdown-extensions==10.20
     # via zensical
-pyparsing==3.3.1
-    # via pip-requirements-parser
 pytest==9.0.2
     # via pytest-benchmark
     # via pytest-cov
@@ -248,18 +217,17 @@ pytest-benchmark==5.2.3
 pytest-cov==7.0.0
 pytest-xdist==3.8.0
 python-dateutil==2.9.0.post0
-    # via bentoml
-python-json-logger==4.0.0
-    # via bentoml
+    # via pandas
 python-multipart==0.0.21
-    # via bentoml
+    # via gradio
+pytz==2025.2
+    # via pandas
 pyyaml==6.0.3
-    # via bentoml
+    # via gradio
+    # via huggingface-hub
     # via llama-index-core
     # via pymdown-extensions
     # via zensical
-pyzmq==27.1.0
-    # via kantoku
 regex==2025.11.3
     # via nltk
     # via tiktoken
@@ -267,44 +235,50 @@ requests==2.32.5
     # via llama-index-core
     # via tiktoken
 rich==14.2.0
-    # via bentoml
-    # via rich-toolkit
-rich-toolkit==0.17.1
-    # via bentoml
+    # via typer
 ruff==0.14.11
-schema==0.7.8
-    # via bentoml
+safehttpx==0.1.7
+    # via gradio
+semantic-version==2.10.0
+    # via gradio
 setuptools==80.9.0
     # via llama-index-core
-simple-di==0.1.5
-    # via bentoml
+shellingham==1.5.4
+    # via huggingface-hub
+    # via typer
 six==1.17.0
     # via python-dateutil
 sqlalchemy==2.0.45
     # via llama-index-core
-starlette==0.51.0
-    # via bentoml
+starlette==0.50.0
+    # via fastapi
+    # via gradio
 tenacity==9.1.2
     # via llama-index-core
 tiktoken==0.12.0
     # via llama-index-core
-tomli-w==1.2.0
-    # via bentoml
-tornado==6.5.4
-    # via kantoku
+tomlkit==0.13.3
+    # via gradio
 tqdm==4.67.1
+    # via huggingface-hub
     # via llama-index-core
     # via nltk
+typer==0.21.1
+    # via gradio
+typer-slim==0.21.1
+    # via huggingface-hub
 typing-extensions==4.15.0
+    # via fastapi
+    # via gradio
+    # via gradio-client
+    # via huggingface-hub
     # via llama-index-core
     # via llama-index-workflows
-    # via opentelemetry-api
-    # via opentelemetry-sdk
-    # via opentelemetry-semantic-conventions
     # via pydantic
     # via pydantic-core
-    # via rich-toolkit
     # via sqlalchemy
+    # via typer
+    # via typer-slim
     # via typing-inspect
     # via typing-inspection
 typing-inspect==0.9.0
@@ -312,21 +286,15 @@ typing-inspect==0.9.0
     # via llama-index-core
 typing-inspection==0.4.2
     # via pydantic
+tzdata==2025.3
+    # via pandas
 urllib3==2.6.3
     # via requests
 uvicorn==0.40.0
-    # via bentoml
-watchfiles==1.1.1
-    # via bentoml
+    # via gradio
 wrapt==1.17.3
     # via deprecated
     # via llama-index-core
-    # via opentelemetry-instrumentation
-    # via opentelemetry-instrumentation-aiohttp-client
-wsproto==1.3.2
-    # via httpx-ws
 yarl==1.22.0
     # via aiohttp
 zensical==0.0.15
-zipp==3.23.0
-    # via importlib-metadata
