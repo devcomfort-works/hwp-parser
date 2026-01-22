@@ -54,4 +54,8 @@ jobs:
           git config user.email "action@github.com"
           git add .
           git commit -m "Deploy from GitHub Actions: ${{ github.sha }}"
-          git push --force https://devcomfort:$HF_TOKEN@huggingface.co/spaces/devcomfort/hwp-parser main
+          
+          # HEAD:main 문법을 사용하여 로컬 브랜치 이름(master/main)에 상관없이 
+          # 리모트의 'main' 브랜치로 강제 푸시합니다.
+          # 다른 브랜치로 배포하려면 뒤의 'main'을 'gh-pages' 등으로 변경하세요.
+          git push --force https://devcomfort:$HF_TOKEN@huggingface.co/spaces/devcomfort/hwp-parser HEAD:main
