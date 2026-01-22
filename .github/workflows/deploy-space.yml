@@ -45,11 +45,13 @@ jobs:
           cat README.md >> deploy_dist/README.md
 
       - name: Push to Hub
-        uses: nateraw/huggingface-sync-action@v1
-        with:
-          github_repo_id: devcomfort-works/hwp-parser
-          huggingface_repo_id: devcomfort/hwp-parser
-          hf_token: ${{ secrets.HF_TOKEN }}
-          repo_type: space
-          space_sdk: gradio
-          subdirectory: deploy_dist
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          cd deploy_dist
+          git init
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "Deploy from GitHub Actions: ${{ github.sha }}"
+          git push --force https://devcomfort:$HF_TOKEN@huggingface.co/spaces/devcomfort/hwp-parser main
