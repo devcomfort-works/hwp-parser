@@ -18,18 +18,26 @@ jobs:
         run: |
           mkdir deploy_dist
           
-          # 1. 소스 코드 및 설정 복사
-          cp -r src deploy_dist/
-          cp pyproject.toml deploy_dist/
-          cp LICENSE deploy_dist/
+          # 1. 소스 코드 복사 (패키지 구조 변경)
+          # src/hwp_parser를 루트의 hwp_parser로 복사하여 설치 없이 import 가능하게 함
+          cp -r src/hwp_parser deploy_dist/hwp_parser
           
-          # 2. app.py 배치 (진입점)
+          # 2. app.py 배치
           cp src/hwp_parser/web/app.py deploy_dist/app.py
           
-          # 3. 의존성 설치 설정 (현재 패키지 설치)
-          echo "." > deploy_dist/requirements.txt
+          # 3. requirements.txt 수동 생성 (설치 문제 우회)
+          # pyproject.toml의 dependencies 항목을 그대로 옮김
+          cat <<EOF > deploy_dist/requirements.txt
+          pyhwp>=0.1b15
+          html2text>=2025.4.15
+          html-to-markdown>=2.23.1
+          llama-index-core>=0.14.12
+          click>=8.3.1
+          gradio>=6.3.0
+          loguru>=0.7.3
+          EOF
           
-          # 4. Space 전용 README.md 생성 (메타데이터 설정)
+          # 4. Space 전용 README.md 생성
           echo "---" > deploy_dist/README.md
           echo "title: HWP Parser" >> deploy_dist/README.md
           echo "emoji: 📄" >> deploy_dist/README.md
