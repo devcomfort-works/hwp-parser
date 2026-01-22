@@ -41,7 +41,7 @@ index = VectorStoreIndex.from_documents(documents)
 hwp-parser convert *.hwp
 
 # 4. Web UI 실행 (Gradio)
-python web/app.py
+hwp-parser web
 ```
 
 ## 주요 기능
@@ -97,16 +97,15 @@ rye sync          # 의존성 설치
 
 ### 사용 가능한 명령어
 
-`pyproject.toml`에 정의된 주요 스크립트입니다.
+`pyproject.toml`에 정의된 주요 스크립트입니다. (개발 환경 전용)
 
-| 명령어 | 설명 |
-|---|---|
-| `rye run web` | **Web UI 실행**: Gradio 기반 데모 앱을 실행합니다. |
-| `rye run test` | **테스트**: 전체 테스트 스위트를 병렬로 실행합니다. |
-| `rye run test-cov` | **커버리지**: 테스트 실행 및 코드 커버리지를 측정합니다. |
-| `rye run benchmark` | **벤치마크**: 변환 성능을 측정합니다. |
-| `rye run docs` | **문서 서버**: 로컬에서 문서를 미리 봅니다. |
-
+| 명령어              | 설명                                                     |
+| ------------------- | -------------------------------------------------------- |
+| `rye run web`       | **Web UI 실행**: `hwp-parser web`의 단축 명령어입니다.   |
+| `rye run test`      | **테스트**: 전체 테스트 스위트를 병렬로 실행합니다.      |
+| `rye run test-cov`  | **커버리지**: 테스트 실행 및 코드 커버리지를 측정합니다. |
+| `rye run benchmark` | **벤치마크**: 변환 성능을 측정합니다.                    |
+| `rye run docs`      | **문서 서버**: 로컬에서 문서를 미리 봅니다.              |
 
 ## 라이선스
 

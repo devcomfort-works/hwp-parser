@@ -216,6 +216,36 @@ def convert(
     click.echo("모든 작업이 완료되었습니다.")
 
 
+@cli.command()
+@click.option(
+    "--host",
+    default="0.0.0.0",
+    help="서버 호스트 (기본값: 0.0.0.0)",
+)
+@click.option(
+    "--port",
+    type=int,
+    default=7860,
+    help="서버 포트 (기본값: 7860)",
+)
+def web(host: str, port: int) -> None:
+    """Gradio 기반의 웹 데모를 실행합니다."""
+    try:
+        import tempfile
+        from hwp_parser.web.app import ui
+        
+        click.echo(f"Starting Web UI on http://{host}:{port}")
+        demo = ui()
+        demo.launch(
+            server_name=host,
+            server_port=port,
+            allowed_paths=[tempfile.gettempdir()],
+        )
+    except ImportError as e:
+        click.echo(f"Web UI 실행 실패: {e}", err=True)
+        click.echo("pip install hwp-parser 를 확인해주세요.", err=True)
+
+
 def main() -> None:
     cli()
 

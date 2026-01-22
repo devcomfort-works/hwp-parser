@@ -64,7 +64,7 @@ dev-dependencies = [
 [tool.rye.scripts]
 # ===== 서버 실행 =====
 # Web UI 서버 (Gradio, http://localhost:7860)
-web = "python web/app.py"
+web = "hwp-parser web"
 
 # ===== 테스트 =====
 # 기본 테스트 (병렬)
