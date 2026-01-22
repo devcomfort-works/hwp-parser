@@ -102,17 +102,25 @@ class HWPReader(BaseReader):  # type: ignore[misc]
             FileNotFoundError: 파일이 존재하지 않는 경우
             RuntimeError: 변환 실패
         """
+        from hwp_parser.core.converter import HTMLDirResult
+
         if not isinstance(file, Path):
             file = Path(file)
 
         # Core 변환기로 변환
         result = self._converter.convert(file, output_format)
 
-        # ODT는 바이너리이므로 base64 인코딩
-        if result.is_binary:
+        # HTML은 HTMLDirResult를 반환
+        if isinstance(result, HTMLDirResult):
+            content = result.xhtml_content
+            pipeline = "hwp→xhtml"
+        elif result.is_binary:
+            # ODT는 바이너리이므로 base64 인코딩
             content = base64.b64encode(cast(bytes, result.content)).decode("utf-8")
+            pipeline = result.pipeline
         else:
             content = cast(str, result.content)
+            pipeline = result.pipeline
 
         # 메타데이터 구성
         metadata: dict[str, Any] = {
@@ -120,7 +128,7 @@ class HWPReader(BaseReader):  # type: ignore[misc]
             "file_path": str(result.source_path.absolute()),
             "format": result.output_format,
             "source": "hwp-parser",
-            "conversion_pipeline": result.pipeline,
+            "conversion_pipeline": pipeline,
         }
 
         if extra_info:

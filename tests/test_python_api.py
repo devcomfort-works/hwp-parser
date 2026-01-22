@@ -127,20 +127,22 @@ class TestFileValidation:
 
 
 class TestToHtml:
-    """HTML 변환 테스트 스위트.
+    """HTML 디렉터리 변환 테스트 스위트.
 
     테스트 대상:
         - HWPConverter.to_html() 메서드
 
     검증 범위:
-        1. 반환값이 ConversionResult 타입
-        2. output_format="html", pipeline="hwp→xhtml"
-        3. 결과에 HTML 태그 포함
+        1. 반환값이 HTMLDirResult 타입
+        2. xhtml_content, css_content, bindata 필드 존재
+        3. to_zip_bytes() 메서드 동작
+        4. get_preview_html() 메서드 동작
+        5. output_format 프로퍼티가 'html' 반환
 
     변환 파이프라인:
-        HWP → pyhwp(hwp5html) → XHTML
+        HWP → pyhwp(hwp5html) → 디렉터리 (index.xhtml, styles.css, bindata/)
 
-    관론 테스트:
+    관련 테스트:
         - TestToText: HTML을 텍스트로 추가 변환
         - TestToMarkdown: HTML을 마크다운으로 추가 변환
     """
@@ -148,32 +150,139 @@ class TestToHtml:
     def test_to_html_returns_result(
         self, converter: HWPConverter, sample_hwp_file: Path
     ) -> None:
-        """HWP → HTML 변환 결과.
+        """HWP → HTML 디렉터리 변환 결과.
 
         Given: 유효한 HWP 파일
         When: to_html 호출
-        Then: ConversionResult(output_format="html", pipeline="hwp→xhtml")
+        Then: HTMLDirResult 반환, xhtml_content에 HTML 포함
         """
-        result = converter.to_html(sample_hwp_file)
-        assert isinstance(result, ConversionResult)
-        assert result.output_format == "html"
-        assert result.pipeline == "hwp→xhtml"
-        assert isinstance(result.content, str)
-        assert not result.is_binary
+        from hwp_parser.core import HTMLDirResult
 
-    def test_to_html_contains_html_tags(
+        result = converter.to_html(sample_hwp_file)
+        assert isinstance(result, HTMLDirResult)
+        assert isinstance(result.xhtml_content, str)
+        assert isinstance(result.css_content, str)
+        assert isinstance(result.bindata, dict)
+        assert "<html" in result.xhtml_content.lower()
+
+    def test_to_html_output_format(
         self, converter: HWPConverter, sample_hwp_file: Path
     ) -> None:
-        """HTML 결과에 태그 포함 확인.
+        """output_format 프로퍼티 확인.
 
         Given: 유효한 HWP 파일
         When: to_html 호출
-        Then: 결과에 <html> 또는 <!doctype> 포함
+        Then: output_format이 'html'
         """
         result = converter.to_html(sample_hwp_file)
-        content = result.content
-        assert isinstance(content, str)
-        assert "<html" in content.lower() or "<!doctype" in content.lower()
+        assert result.output_format == "html"
+
+    def test_to_html_has_css(
+        self, converter: HWPConverter, sample_hwp_file: Path
+    ) -> None:
+        """CSS 스타일시트 생성 확인.
+
+        Given: 유효한 HWP 파일
+        When: to_html 호출
+        Then: css_content가 비어있지 않음
+        """
+        result = converter.to_html(sample_hwp_file)
+        # CSS는 항상 생성됨 (빈 문서라도 기본 스타일이 있음)
+        assert result.css_content is not None
+
+    def test_to_html_is_binary(
+        self, converter: HWPConverter, sample_hwp_file: Path
+    ) -> None:
+        """is_binary 프로퍼티 확인 (HTML은 항상 False).
+
+        Given: 유효한 HWP 파일
+        When: to_html 호출
+        Then: is_binary == False
+        """
+        result = converter.to_html(sample_hwp_file)
+        assert result.is_binary is False
+
+    def test_to_zip_bytes(self, converter: HWPConverter, sample_hwp_file: Path) -> None:
+        """ZIP 바이트 생성 확인.
+
+        Given: HTML 디렉터리 변환 결과
+        When: to_zip_bytes 호출
+        Then: ZIP 파일 형식의 bytes 반환 (PK 시그니처)
+        """
+        import zipfile
+        from io import BytesIO
+
+        result = converter.to_html(sample_hwp_file)
+        zip_bytes = result.to_zip_bytes()
+
+        assert isinstance(zip_bytes, bytes)
+        assert zip_bytes[:2] == b"PK"  # ZIP 시그니처
+
+        # ZIP 내용 검증
+        with zipfile.ZipFile(BytesIO(zip_bytes), "r") as zf:
+            names = zf.namelist()
+            assert "index.xhtml" in names
+            assert "styles.css" in names
+
+    def test_get_preview_html(
+        self, converter: HWPConverter, sample_hwp_file: Path
+    ) -> None:
+        """미리보기 HTML 생성 확인.
+
+        Given: HTML 디렉터리 변환 결과
+        When: get_preview_html 호출
+        Then: CSS가 인라인으로 포함된 HTML 반환
+        """
+        result = converter.to_html(sample_hwp_file)
+        preview = result.get_preview_html()
+
+        assert isinstance(preview, str)
+        assert "<style>" in preview
+        assert result.css_content in preview
+
+    def test_source_name(self, converter: HWPConverter, sample_hwp_file: Path) -> None:
+        """source_name 프로퍼티 확인.
+
+        Given: HTML 디렉터리 변환 결과
+        When: source_name 접근
+        Then: 원본 파일명 반환
+        """
+        result = converter.to_html(sample_hwp_file)
+        assert result.source_name == sample_hwp_file.name
+
+    def test_to_html_verbose(self, sample_hwp_file: Path) -> None:
+        """verbose 모드에서 로깅 확인.
+
+        Given: verbose=True로 설정된 converter
+        When: to_html 호출
+        Then: 정상 동작 (로깅만 추가됨)
+        """
+        from hwp_parser.core import HTMLDirResult
+
+        converter = HWPConverter(verbose=True)
+        result = converter.to_html(sample_hwp_file)
+        assert isinstance(result, HTMLDirResult)
+
+    def test_to_html_with_bindata(
+        self, converter: HWPConverter, hwp_file_with_bindata: Path
+    ) -> None:
+        """bindata(이미지) 포함된 HWP 변환.
+
+        Given: 이미지가 포함된 HWP 파일
+        When: to_html 호출
+        Then: bindata 딕셔너리에 이미지 파일 포함
+        """
+        result = converter.to_html(hwp_file_with_bindata)
+        assert len(result.bindata) > 0
+
+        # ZIP에 bindata 포함 확인
+        import zipfile
+        from io import BytesIO
+
+        zip_bytes = result.to_zip_bytes()
+        with zipfile.ZipFile(BytesIO(zip_bytes), "r") as zf:
+            bindata_files = [n for n in zf.namelist() if n.startswith("bindata/")]
+            assert len(bindata_files) > 0
 
 
 class TestToText:
