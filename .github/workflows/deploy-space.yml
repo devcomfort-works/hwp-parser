@@ -26,15 +26,16 @@ jobs:
           cp src/hwp_parser/web/app.py deploy_dist/app.py
           
           # 3. requirements.txt 수동 생성 (설치 문제 우회)
-          # pyproject.toml의 dependencies 항목을 그대로 옮김
+          # pyproject.toml의 dependencies 항목을 기반으로 하되, 호환성 문제 해결을 위해 버전 조정
           cat <<EOF > deploy_dist/requirements.txt
           pyhwp>=0.1b15
-          html2text>=2025.4.15
-          html-to-markdown>=2.23.1
-          llama-index-core>=0.14.12
-          click>=8.3.1
-          gradio>=6.3.0
-          loguru>=0.7.3
+          html2text
+          html-to-markdown
+          llama-index-core
+          click
+          gradio
+          loguru
+          huggingface-hub<0.25.0
           EOF
           
           # 4. Space 전용 README.md 생성
