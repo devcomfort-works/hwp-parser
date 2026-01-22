@@ -3,8 +3,11 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Coverage](https://raw.githubusercontent.com/devcomfort-works/hwp-parser/main/.github/badges/coverage.svg)](https://github.com/devcomfort-works/hwp-parser/actions/workflows/coverage.yml)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/devcomfort/hwp-parser)
 
 HWP 파일을 텍스트, HTML, Markdown, ODT로 변환하는 Python 라이브러리입니다.
+
+> **체험하기**: [Hugging Face Spaces](https://huggingface.co/spaces/devcomfort/hwp-parser)에서 설치 없이 바로 사용해보세요!
 
 ## 빠른 시작
 
