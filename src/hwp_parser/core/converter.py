@@ -127,16 +127,35 @@ class HTMLDirResult:
         return buffer.getvalue()
 
     def get_preview_html(self) -> str:
-        """미리보기용 완전한 HTML 생성 (CSS 인라인 포함)"""
-        # CSS를 style 태그로 인라인 삽입
+        """미리보기용 완전한 HTML 생성 (CSS, 이미지 인라인 포함)"""
+        import base64
+        import mimetypes
+
+        html = self.xhtml_content
+
+        # 1. bindata 이미지를 base64 data URI로 교체
+        for name, data in self.bindata.items():
+            # MIME 타입 추론
+            mime_type, _ = mimetypes.guess_type(name)
+            if mime_type is None:
+                mime_type = "application/octet-stream"
+
+            # base64 인코딩
+            b64_data = base64.b64encode(data).decode("ascii")
+            data_uri = f"data:{mime_type};base64,{b64_data}"
+
+            # bindata/파일명 참조를 data URI로 교체
+            html = html.replace(f"bindata/{name}", data_uri)
+
+        # 2. CSS를 style 태그로 인라인 삽입
         css_tag = f"<style>\n{self.css_content}\n</style>"
 
         # </head> 앞에 CSS 삽입
-        if "</head>" in self.xhtml_content:
-            return self.xhtml_content.replace("</head>", f"{css_tag}\n</head>")
+        if "</head>" in html:
+            return html.replace("</head>", f"{css_tag}\n</head>")
         else:  # pragma: no cover
             # head가 없으면 맨 앞에 추가 (pyhwp는 항상 head를 생성하므로 발생하지 않음)
-            return f"{css_tag}\n{self.xhtml_content}"
+            return f"{css_tag}\n{html}"
 
 
 class HWPConverter:

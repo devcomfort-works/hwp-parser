@@ -240,6 +240,26 @@ class TestToHtml:
         assert "<style>" in preview
         assert result.css_content in preview
 
+    def test_get_preview_html_with_images(
+        self, converter: HWPConverter, hwp_file_with_bindata: Path
+    ) -> None:
+        """이미지 포함된 미리보기 HTML 생성 확인.
+
+        Given: bindata(이미지)가 포함된 HWP 파일
+        When: get_preview_html 호출
+        Then: 이미지가 base64 data URI로 인라인됨
+        """
+        result = converter.to_html(hwp_file_with_bindata)
+        preview = result.get_preview_html()
+
+        # bindata가 있으면 data URI로 변환되어야 함
+        if result.bindata:
+            assert "data:" in preview
+            assert "base64" in preview
+            # 원본 bindata/ 경로는 없어야 함
+            for name in result.bindata.keys():
+                assert f"bindata/{name}" not in preview
+
     def test_source_name(self, converter: HWPConverter, sample_hwp_file: Path) -> None:
         """source_name 프로퍼티 확인.
 
