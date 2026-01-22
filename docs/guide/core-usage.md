@@ -40,17 +40,74 @@ print(result.content)
 
 ### to_html()
 
-HWP 파일을 HTML로 변환합니다.
+HWP 파일을 HTML 디렉터리 구조로 변환합니다. `ConversionResult`가 아닌 `HTMLDirResult`를 반환합니다.
 
 ```python
 result = converter.to_html("document.hwp")
 
-# 파일로 저장
-with open("output.html", "w") as f:
-    f.write(result.content)
+# HTMLDirResult 속성
+print(result.xhtml_content)  # 메인 HTML 콘텐츠
+print(result.css_content)    # CSS 스타일시트 (없으면 None)
+print(result.bindata)        # 이미지 등 바이너리 데이터 {filename: bytes}
 ```
 
-**파이프라인**: `hwp → xhtml`
+**파이프라인**: `hwp → xhtml (디렉터리)`
+
+#### HTMLDirResult
+
+| 속성            | 타입               | 설명                    |
+| --------------- | ------------------ | ----------------------- |
+| `xhtml_content` | `str`              | 메인 XHTML 콘텐츠       |
+| `css_content`   | `str \| None`      | CSS 스타일시트          |
+| `bindata`       | `dict[str, bytes]` | 이미지 등 바이너리 파일 |
+| `source_path`   | `Path`             | 원본 파일 경로          |
+| `converted_at`  | `datetime`         | 변환 시각               |
+
+#### 파일로 저장
+
+```python
+from pathlib import Path
+
+result = converter.to_html("document.hwp")
+output_dir = Path("output/document")
+output_dir.mkdir(parents=True, exist_ok=True)
+
+# XHTML 저장
+(output_dir / "index.xhtml").write_text(result.xhtml_content)
+
+# CSS 저장 (있는 경우)
+if result.css_content:
+    (output_dir / "styles.css").write_text(result.css_content)
+
+# 이미지 저장
+if result.bindata:
+    bindata_dir = output_dir / "bindata"
+    bindata_dir.mkdir(exist_ok=True)
+    for filename, data in result.bindata.items():
+        (bindata_dir / filename).write_bytes(data)
+```
+
+#### ZIP으로 압축
+
+```python
+# ZIP 바이트로 변환
+zip_bytes = result.to_zip_bytes()
+
+# 파일로 저장
+Path("document.zip").write_bytes(zip_bytes)
+```
+
+#### 미리보기 HTML 생성
+
+CSS와 이미지를 인라인으로 포함한 단일 HTML을 생성합니다:
+
+```python
+# CSS는 <style> 태그로, 이미지는 base64 data URI로 인라인
+preview_html = result.get_preview_html()
+
+# 브라우저에서 바로 열 수 있는 HTML
+Path("preview.html").write_text(preview_html)
+```
 
 > ℹ️ **pyhwp 변환**
 >
@@ -194,9 +251,34 @@ for hwp_file in hwp_files:
     result = converter.to_markdown(hwp_file)  # 재사용
 ```
 
-### 병렬 처리
+### 병렬 처리 (Worker 모드)
 
-CPU 바운드 작업이므로 `multiprocessing`을 사용한 병렬 처리가 효과적입니다:
+CPU 바운드 작업이므로 `multiprocessing`을 사용한 병렬 처리가 효과적입니다.
+
+#### num_workers 옵션 (권장)
+
+`HWPConverter`는 내장 Worker 모드를 지원합니다:
+
+```python
+from hwp_parser import HWPConverter
+
+# 4개의 워커 프로세스로 병렬 처리
+converter = HWPConverter(num_workers=4)
+
+# 이후 변환 호출은 워커 풀에서 처리됨
+for hwp_file in hwp_files:
+    result = converter.to_markdown(hwp_file)
+```
+
+Worker 모드는 프로세스 풀을 미리 생성하여 재사용하므로,
+여러 파일을 변환할 때 프로세스 생성 오버헤드를 줄일 수 있습니다.
+
+> ⚠️ **Worker 모드 제한**
+>
+> Worker 모드에서는 `to_odt()` 변환이 지원되지 않습니다.
+> ODT 변환은 기본 모드에서만 사용 가능합니다.
+
+#### 직접 multiprocessing 사용
 
 ```python
 from pathlib import Path

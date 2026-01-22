@@ -37,8 +37,11 @@ index = VectorStoreIndex.from_documents(documents)
 ```
 
 ```bash
-# 3. API 서버 실행 (BentoML)
-bentoml serve hwp_parser:HWPService
+# 3. CLI 도구 사용
+hwp-parser convert *.hwp
+
+# 4. Web UI 실행 (Gradio)
+python web/app.py
 ```
 
 ## 주요 기능
@@ -46,8 +49,9 @@ bentoml serve hwp_parser:HWPService
 | 기능                   | 설명                             |
 | ---------------------- | -------------------------------- |
 | 🔄 **다중 포맷 변환**  | HWP → Text, HTML, Markdown, ODT  |
+| 💻 **CLI 도구**        | 터미널에서 대량 파일 변환 처리   |
+| 🖥️ **Web UI**          | Gradio 기반의 대화형 변환 데모   |
 | 🦙 **LlamaIndex 통합** | RAG 파이프라인에서 HWP 문서 활용 |
-| 🌐 **REST API**        | BentoML 기반 HTTP API 서버       |
 
 ## 설치 옵션
 
@@ -58,35 +62,17 @@ pip install git+https://github.com/devcomfort-works/hwp-parser.git
 # pip LlamaIndex 어댑터 포함
 pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 
-# pip REST API 서버 포함
-pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
-
-# pip 전체 기능 포함
-pip install "hwp-parser[all] @ git+https://github.com/devcomfort-works/hwp-parser.git"
-
 # uv 기본 설치
 uv add git+https://github.com/devcomfort-works/hwp-parser.git
 
 # uv LlamaIndex 어댑터 포함
 uv add "git+https://github.com/devcomfort-works/hwp-parser.git[llama-index]"
 
-# uv REST API 서버 포함
-uv add "git+https://github.com/devcomfort-works/hwp-parser.git[bentoml]"
-
-# uv 전체 기능 포함
-uv add "git+https://github.com/devcomfort-works/hwp-parser.git[all]"
-
 # rye 기본 설치
 rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 
 # rye LlamaIndex 어댑터 포함
 rye add "hwp-parser[llama-index]" --git https://github.com/devcomfort-works/hwp-parser.git
-
-# rye REST API 서버 포함
-rye add "hwp-parser[bentoml]" --git https://github.com/devcomfort-works/hwp-parser.git
-
-# rye 전체 기능 포함
-rye add "hwp-parser[all]" --git https://github.com/devcomfort-works/hwp-parser.git
 ```
 
 ## 사용 예시
@@ -101,31 +87,26 @@ documents = HWPReader().load_data("document.hwp")
 index = VectorStoreIndex.from_documents(documents)
 ```
 
-### REST API
-
-```bash
-# 서버 실행
-bentoml serve hwp_parser:HWPService
-
-# 또는 Python에서
-from hwp_parser import serve
-serve()
-```
-
-```bash
-# API 호출
-curl -X POST http://localhost:3000/convert/markdown -F "file=@document.hwp"
-```
-
 ## 개발
 
 ```bash
 git clone https://github.com/devcomfort-works/hwp-parser.git
 cd hwp-parser
 rye sync          # 의존성 설치
-rye run test      # 테스트 실행
-rye run serve     # API 서버 실행
 ```
+
+### 사용 가능한 명령어
+
+`pyproject.toml`에 정의된 주요 스크립트입니다.
+
+| 명령어 | 설명 |
+|---|---|
+| `rye run web` | **Web UI 실행**: Gradio 기반 데모 앱을 실행합니다. |
+| `rye run test` | **테스트**: 전체 테스트 스위트를 병렬로 실행합니다. |
+| `rye run test-cov` | **커버리지**: 테스트 실행 및 코드 커버리지를 측정합니다. |
+| `rye run benchmark` | **벤치마크**: 변환 성능을 측정합니다. |
+| `rye run docs` | **문서 서버**: 로컬에서 문서를 미리 봅니다. |
+
 
 ## 라이선스
 
@@ -135,4 +116,3 @@ rye run serve     # API 서버 실행
 
 - [pyhwp](https://github.com/mete0r/pyhwp) - HWP 파일 파서 (핵심 의존성)
 - [LlamaIndex](https://www.llamaindex.ai/) - LLM 데이터 프레임워크
-- [BentoML](https://www.bentoml.com/) - ML 서비스 프레임워크

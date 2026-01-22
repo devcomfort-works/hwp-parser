@@ -7,7 +7,7 @@ HWP Parser를 사용하여 첫 번째 HWP 파일을 변환해봅니다.
 | 용도               | 설명                            | 바로가기                                |
 | ------------------ | ------------------------------- | --------------------------------------- |
 | 📄 **파일 변환**   | HWP → Markdown, HTML, Text 변환 | [라이브러리로 시작](#라이브러리로-시작) |
-| 🌐 **웹 서비스**   | REST API로 변환 서비스 제공     | [API로 시작](#api로-시작)               |
+| 💻 **일괄 변환**   | CLI로 여러 파일 한 번에 변환    | [CLI로 시작](#cli로-시작)               |
 | 🤖 **AI/RAG 연동** | LlamaIndex로 HWP 문서 로드      | [LlamaIndex로 시작](#llamaindex로-시작) |
 
 ---
@@ -70,60 +70,44 @@ for hwp_file in Path("documents").glob("*.hwp"):
 
 ---
 
-## API로 시작
+## CLI로 시작
 
-REST API 서버를 실행하여 HTTP로 HWP 파일을 변환합니다.
+커맨드라인에서 HWP 파일을 변환합니다.
 
-### 설치
-
-```bash
-pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
-```
-
-### 서버 실행
+### 기본 사용
 
 ```bash
-bentoml serve hwp_parser.adapters.api:HWPService
+# 단일 파일 변환
+hwp-parser convert document.hwp
+
+# 특정 포맷으로 변환
+hwp-parser convert document.hwp --format txt
+hwp-parser convert document.hwp --format html
 ```
 
-서버가 `http://localhost:3000`에서 실행됩니다.
-
-### API 호출
+### 여러 파일 일괄 변환
 
 ```bash
-# Markdown으로 변환
-curl -X POST http://localhost:3000/convert/markdown \
-    -F "file=@document.hwp"
+# 현재 디렉터리의 모든 HWP 파일
+hwp-parser convert *.hwp
 
-# HTML로 변환
-curl -X POST http://localhost:3000/convert/html \
-    -F "file=@document.hwp"
+# 특정 디렉터리에 저장
+hwp-parser convert *.hwp --output-dir output/
 
-# 텍스트로 변환
-curl -X POST http://localhost:3000/convert/text \
-    -F "file=@document.hwp"
+# 4개 프로세스로 병렬 처리
+hwp-parser convert *.hwp --workers 4
 ```
 
-### Python에서 API 호출
+### 진행률 표시
 
-```python
-import requests
-
-def convert_hwp(file_path: str, format: str = "markdown") -> str:
-    """HWP 파일을 API로 변환"""
-    with open(file_path, "rb") as f:
-        response = requests.post(
-            f"http://localhost:3000/convert/{format}",
-            files={"file": f}
-        )
-    return response.json()["content"]
-
-# 사용
-content = convert_hwp("document.hwp", "markdown")
-print(content)
+```
+$ hwp-parser convert *.hwp -w 4
+총 10개의 파일을 변환합니다 (Format: markdown, Workers: 4)...
+Converting [████████████████████████████████████████] 100%
+모든 작업이 완료되었습니다.
 ```
 
-👉 더 자세한 내용: [REST API 가이드](../guide/rest-api.md)
+👉 더 자세한 내용: [CLI 가이드](../guide/cli.md)
 
 ---
 

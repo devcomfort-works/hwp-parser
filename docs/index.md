@@ -33,11 +33,11 @@ print(result.content)
 
 ### ✅ 해결
 
-| 기능                | 설명                                        |
-| ------------------- | ------------------------------------------- |
-| **간편한 API**      | 3줄 코드로 HWP → Markdown 변환              |
-| **LlamaIndex 통합** | `HWPReader`로 RAG 파이프라인에 바로 연결    |
-| **REST API**        | BentoML 기반 HTTP API로 마이크로서비스 구축 |
+| 기능                | 설명                                     |
+| ------------------- | ---------------------------------------- |
+| **간편한 API**      | 3줄 코드로 HWP → Markdown 변환           |
+| **LlamaIndex 통합** | `HWPReader`로 RAG 파이프라인에 바로 연결 |
+| **CLI 도구**        | 커맨드라인에서 HWP 파일 일괄 변환        |
 
 ---
 
@@ -47,9 +47,9 @@ print(result.content)
 | ---------------------- | -------------------------------- |
 | 🔄 **다중 포맷 변환**  | HWP → Text, HTML, Markdown, ODT  |
 | 🦙 **LlamaIndex 통합** | RAG 파이프라인에서 HWP 문서 활용 |
-| 🌐 **REST API**        | BentoML 기반 HTTP API 서버       |
-| ⚡ **간편한 설정**     | 환경변수(.env) 기반 설정 지원    |
-| 🧪 **테스트 검증**     | 100% 커버리지, 88개 테스트       |
+| 💻 **CLI 도구**        | 커맨드라인에서 일괄 변환         |
+| ⚡ **병렬 처리**       | Worker 모드로 빠른 변환          |
+| 🧪 **테스트 검증**     | 100% 커버리지                    |
 
 ---
 
@@ -85,8 +85,6 @@ print(result.content)
 | 명령어                                            | 용도                |
 | ------------------------------------------------- | ------------------- |
 | `pip install "hwp-parser[llama-index] @ git+..."` | LlamaIndex RAG 통합 |
-| `pip install "hwp-parser[bentoml] @ git+..."`     | REST API 서버       |
-| `pip install "hwp-parser[all] @ git+..."`         | 전체 기능           |
 
 [→ 상세 설치 가이드](getting-started/installation.md)
 
@@ -122,24 +120,17 @@ response = index.as_query_engine().query("휴가 정책이 뭐야?")
 
 [→ LlamaIndex 가이드](guide/llama-index.md)
 
-### 🌐 HTTP API 서비스를 제공할 때
+### 💻 커맨드라인에서 일괄 변환할 때
 
 ```bash
-# 서버 실행
-bentoml serve hwp_parser:HWPService
+# 모든 HWP 파일을 Markdown으로 변환
+hwp-parser convert *.hwp --format markdown
 
-# 또는 Python에서
-from hwp_parser import serve
-serve()
+# 4개 프로세스로 병렬 처리
+hwp-parser convert documents/*.hwp --workers 4 --output-dir output/
 ```
 
-```bash
-# 클라이언트 요청
-curl -X POST http://localhost:3000/convert/markdown \
-    -F "file=@document.hwp"
-```
-
-[→ REST API 가이드](guide/rest-api.md)
+[→ CLI 가이드](guide/cli.md)
 
 ---
 
@@ -156,11 +147,11 @@ curl -X POST http://localhost:3000/convert/markdown \
 
 ## 문서 구조
 
-| 섹션                                    | 내용                                   |
-| --------------------------------------- | -------------------------------------- |
-| [시작하기](getting-started/overview.md) | 설치, 요구사항, 빠른 시작              |
-| [사용 가이드](guide/overview.md)        | Core, LlamaIndex, REST API 상세 가이드 |
-| [문제 해결](troubleshooting.md)         | FAQ 및 트러블슈팅                      |
+| 섹션                                    | 내용                              |
+| --------------------------------------- | --------------------------------- |
+| [시작하기](getting-started/overview.md) | 설치, 요구사항, 빠른 시작         |
+| [사용 가이드](guide/overview.md)        | Core, CLI, LlamaIndex 상세 가이드 |
+| [문제 해결](troubleshooting.md)         | FAQ 및 트러블슈팅                 |
 
 ---
 
@@ -181,4 +172,3 @@ curl -X POST http://localhost:3000/convert/markdown \
 
 - [pyhwp](https://github.com/mete0r/pyhwp) - HWP 파일 파서 (핵심 의존성)
 - [LlamaIndex](https://www.llamaindex.ai/) - LLM 데이터 프레임워크
-- [BentoML](https://www.bentoml.com/) - ML 서비스 프레임워크

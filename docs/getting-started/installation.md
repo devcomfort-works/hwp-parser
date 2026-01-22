@@ -26,22 +26,6 @@ RAG 파이프라인에서 HWP 문서를 활용하려면:
 pip install "hwp-parser[llama-index] @ git+https://github.com/devcomfort-works/hwp-parser.git"
 ```
 
-**REST API 서버**
-
-BentoML 기반 REST API 서버를 사용하려면:
-
-```bash
-pip install "hwp-parser[bentoml] @ git+https://github.com/devcomfort-works/hwp-parser.git"
-```
-
-**모든 기능**
-
-모든 선택적 기능을 포함하여 설치하려면:
-
-```bash
-pip install "hwp-parser[all] @ git+https://github.com/devcomfort-works/hwp-parser.git"
-```
-
 ## rye로 설치
 
 [rye](https://rye-up.com/)를 사용하는 경우:
@@ -52,12 +36,6 @@ rye add hwp-parser --git https://github.com/devcomfort-works/hwp-parser.git
 
 # LlamaIndex 어댑터 포함
 rye add "hwp-parser[llama-index]" --git https://github.com/devcomfort-works/hwp-parser.git
-
-# REST API 서버 포함
-rye add "hwp-parser[bentoml]" --git https://github.com/devcomfort-works/hwp-parser.git
-
-# 모든 기능 포함
-rye add "hwp-parser[all]" --git https://github.com/devcomfort-works/hwp-parser.git
 ```
 
 ## uv로 설치
@@ -70,12 +48,6 @@ uv add git+https://github.com/devcomfort-works/hwp-parser.git
 
 # LlamaIndex 어댑터 포함
 uv add git+https://github.com/devcomfort-works/hwp-parser.git --extra llama-index
-
-# REST API 서버 포함
-uv add git+https://github.com/devcomfort-works/hwp-parser.git --extra bentoml
-
-# 모든 기능 포함
-uv add git+https://github.com/devcomfort-works/hwp-parser.git --extra all
 ```
 
 ## 개발 환경 설치

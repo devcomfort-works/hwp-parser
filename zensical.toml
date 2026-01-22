@@ -24,8 +24,8 @@ nav = [
     { "사용 가이드" = [
         { "개요" = "guide/overview.md" },
         { "Core 사용법" = "guide/core-usage.md" },
-        { "LlamaIndex 어댑터" = "guide/llama-index.md" },
-        { "REST API" = "guide/rest-api.md" }
+        { "CLI 사용법" = "guide/cli.md" },
+        { "LlamaIndex 어댑터" = "guide/llama-index.md" }
     ]},
     { "문제 해결" = "troubleshooting.md" }
 ]
