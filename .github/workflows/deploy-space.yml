@@ -39,7 +39,7 @@ jobs:
           echo "colorFrom: blue" >> deploy_dist/README.md
           echo "colorTo: indigo" >> deploy_dist/README.md
           echo "sdk: gradio" >> deploy_dist/README.md
-          echo "sdk_version: 5.23.3" >> deploy_dist/README.md
+          echo "sdk_version: 6.4.0" >> deploy_dist/README.md
           echo "app_file: app.py" >> deploy_dist/README.md
           echo "pinned: false" >> deploy_dist/README.md
           echo "---" >> deploy_dist/README.md
