@@ -84,7 +84,7 @@ fsspec==2026.1.0
     # via gradio-client
     # via huggingface-hub
     # via llama-index-core
-gradio==6.3.0
+gradio==6.4.0
     # via hwp-parser
 gradio-client==2.0.3
     # via gradio
