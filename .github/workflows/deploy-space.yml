@@ -32,11 +32,6 @@ jobs:
           # -e file:. (현재 패키지 설치) 라인 제거
           sed -i '/^-e file:./d' deploy_dist/requirements.txt
           
-          # Gradio 6.3.0의 버그(ImportError: cannot import name 'HfFolder') 해결을 위해 6.4.0+ 강제
-          sed -i 's/^gradio==6.3.0/gradio>=6.4.0/' deploy_dist/requirements.txt
-          
-          # huggingface-hub 버전 고정 제거 (Gradio 6.4.0이 최신 버전을 제대로 지원할 것으로 기대)
-          
           # 4. Space 전용 README.md 생성
           echo "---" > deploy_dist/README.md
           echo "title: HWP Parser" >> deploy_dist/README.md
