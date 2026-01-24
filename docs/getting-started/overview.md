@@ -2,6 +2,8 @@
 
 HWP Parser를 사용하기 전에 확인해야 할 사항들입니다.
 
+> **✨ 체험하기**: 설치 없이 웹 브라우저에서 바로 사용해보세요! 👉 [Hugging Face Spaces 데모](https://huggingface.co/spaces/devcomfort/hwp-parser)
+
 ---
 
 ## 시작 전 체크리스트

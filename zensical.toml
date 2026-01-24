@@ -8,8 +8,8 @@ site_description = "HWP 파일을 다양한 포맷으로 변환하는 Python 라
 site_author = "devcomfort"
 copyright = "Copyright &copy; 2024-2026 devcomfort. Licensed under AGPL-3.0"
 
-repo_url = "https://github.com/devcomfort/hwp-parser"
-repo_name = "devcomfort/hwp-parser"
+repo_url = "https://github.com/devcomfort-works/hwp-parser"
+repo_name = "devcomfort-works/hwp-parser"
 
 docs_dir = "docs"
 site_dir = "site"
@@ -60,8 +60,13 @@ repo = "fontawesome/brands/github"
 
 [[project.extra.social]]
 icon = "fontawesome/brands/github"
-link = "https://github.com/devcomfort/hwp-parser"
+link = "https://github.com/devcomfort-works/hwp-parser"
 name = "GitHub"
+
+[[project.extra.social]]
+icon = "simple/huggingface"
+link = "https://huggingface.co/spaces/devcomfort/hwp-parser"
+name = "Hugging Face Spaces"
 
 [[project.extra.social]]
 icon = "fontawesome/brands/python"
